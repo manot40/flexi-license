@@ -6,7 +6,7 @@ import { useViewportSize } from '@mantine/hooks';
 import { NavigationProgress, startNavigationProgress, completeNavigationProgress } from '@mantine/nprogress';
 import { Navbar, Center, Tooltip, UnstyledButton, createStyles, Stack, Text, Burger, Paper } from '@mantine/core';
 
-import { TablerIcon, IconHome2, IconLogout, IconAffiliate, IconAddressBook } from '@tabler/icons';
+import { TablerIcon, IconHome2, IconLogout, IconAffiliate, IconUsers } from '@tabler/icons';
 
 const useStyles = createStyles((theme) => ({
   link: {
@@ -54,26 +54,26 @@ interface NavbarLinkProps {
 export default function Navigation() {
   const { logout } = useAuth();
   const { width } = useViewportSize();
-  const router = useRouter();
+  const r = useRouter();
 
   const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
-    const handleStart = (url: string) => url !== router.asPath && startNavigationProgress();
+    const handleStart = (url: string) => url !== r.asPath && startNavigationProgress();
     const handleComplete = () => completeNavigationProgress();
 
-    router.events.on('routeChangeStart', handleStart);
-    router.events.on('routeChangeComplete', handleComplete);
-    router.events.on('routeChangeError', handleComplete);
+    r.events.on('routeChangeStart', handleStart);
+    r.events.on('routeChangeComplete', handleComplete);
+    r.events.on('routeChangeError', handleComplete);
 
     return () => {
-      router.events.off('routeChangeStart', handleStart);
-      router.events.off('routeChangeComplete', handleComplete);
-      router.events.off('routeChangeError', handleComplete);
+      r.events.off('routeChangeStart', handleStart);
+      r.events.off('routeChangeComplete', handleComplete);
+      r.events.off('routeChangeError', handleComplete);
     };
-  }, [router.asPath, router.events]);
+  }, [r.asPath, r.events]);
 
-  if (!router.pathname.includes('dashboard')) return null;
+  if (!r.pathname.includes('dashboard')) return null;
 
   return (
     <>
@@ -104,8 +104,8 @@ export default function Navigation() {
                 {...link}
                 vw={width}
                 key={link.label}
-                active={router.pathname.includes(link.label)}
-                onClick={() => router.push(`/${link.label}`)}
+                active={!link.label ? r.pathname === '/dashboard' : r.pathname.includes(link.label)}
+                onClick={() => (setOpen(!open), r.push(`/dashboard/${link.label}`))}
               />
             ))}
           </Stack>
@@ -127,7 +127,7 @@ export default function Navigation() {
 
 function NavbarLink({ icon: Icon, label: _label, active, onClick, vw }: NavbarLinkProps) {
   const { classes, cx } = useStyles();
-  const label = _label[0].toUpperCase() + _label.substring(1);
+  const label = _label ? _label[0].toUpperCase() + _label.substring(1) : 'Dashboard';
 
   return (
     <Tooltip label={label} position="right" transitionDuration={0}>
@@ -144,6 +144,6 @@ function NavbarLink({ icon: Icon, label: _label, active, onClick, vw }: NavbarLi
 }
 
 const menu = [
-  { icon: IconHome2, label: 'dashboard' },
-  { icon: IconAddressBook, label: 'company' },
+  { icon: IconHome2, label: '' },
+  { icon: IconUsers, label: 'users' },
 ];

@@ -1,7 +1,9 @@
+import dayjs from 'dayjs';
 import bcrypt from 'bcryptjs';
 //import { faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
 
+const day = dayjs();
 const prisma = new PrismaClient();
 
 async function seed() {
@@ -21,6 +23,31 @@ async function seed() {
       password: hashedPassword,
     },
   });
+
+  await prisma.company
+    .create({
+      data: {
+        name: 'Acme. Inc.',
+        contactName: 'John Doe',
+        contactNumber: '0123456789',
+        createdBy: user.username,
+        updatedBy: user.username,
+      },
+    })
+    .catch(() => {});
+
+  await prisma.license
+    .create({
+      data: {
+        company: 'Acme. Inc.',
+        maxUser: 69,
+        subscriptionStart: day.toDate(),
+        subscriptionEnd: day.add(1, 'year').toDate(),
+        createdBy: user.username,
+        updatedBy: user.username,
+      },
+    })
+    .catch(() => {});
 
   console.log(`Database has been seeded. 🌱`);
 }

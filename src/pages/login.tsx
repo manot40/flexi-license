@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from '@mantine/form';
 import { useAuth } from 'components/AuthContext';
 import { showNotification } from '@mantine/notifications';
-import { Flex, Card, Button, TextInput, PasswordInput, LoadingOverlay, Checkbox } from '@mantine/core';
+import { Flex, Card, Button, TextInput, PasswordInput, LoadingOverlay, Checkbox, Title, Space } from '@mantine/core';
 
 export default function Login() {
   const { login } = useAuth();
@@ -20,25 +20,35 @@ export default function Login() {
   const handleLogin = async (val: any) => {
     setVisible(true);
 
-    const { success, message } = await login({
-      username: val.username,
-      password: val.password,
-      remember: val.remember,
-    });
-
-    if (!success)
+    try {
+      await login({
+        username: val.username,
+        password: val.password,
+        remember: val.remember,
+      });
+    } catch (err: any) {
       showNotification({
         color: 'red',
         title: 'Login Failed',
-        message,
+        message: err.message,
       });
+    }
 
     setVisible(false);
   };
 
   return (
-    <Flex mih={50} gap="xs" justify="center" align="center" direction="column" style={{ height: '100%' }}>
-      <h1>Flexi</h1>
+    <Flex
+      h="100%"
+      w="100%"
+      gap="xs"
+      mih={50}
+      align="center"
+      justify="center"
+      direction="column"
+      style={{ position: 'fixed', top: 0, left: 0 }}>
+      <Title order={1}>Flexi</Title>
+      <Space h="md" />
       <Card withBorder p="lg" shadow="md" radius="md">
         <form onSubmit={form.onSubmit(handleLogin)}>
           <LoadingOverlay visible={visible} overlayBlur={2} />

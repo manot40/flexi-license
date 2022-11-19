@@ -20,6 +20,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  CreatedLicense License[] @relation("CreatedLicense")
+  UpdatedLicense License[] @relation("UpdatedLicense")
+  CreatedCompany Company[] @relation("CreatedCompany")
+  UpdatedCompany Company[] @relation("UpdatedCompany")
+
   @@map("flexi_users")
 }
 
@@ -29,25 +34,33 @@ model Company {
   contactName   String
   contactNumber String
 
-  license License[]
+  License License[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+  CreatedBy User     @relation("CreatedCompany", fields: [createdBy], references: [username])
+  UpdatedBy User     @relation("UpdatedCompany", fields: [updatedBy], references: [username])
 
   @@map("flexi_companies")
 }
 
 model License {
   id                String   @id @default(cuid())
-  companyId         String
+  company           String
   maxUser           Int      @default(1)
   subscriptionStart DateTime @default(now())
   subscriptionEnd   DateTime
 
-  company Company @relation(fields: [companyId], references: [id])
+  Company Company @relation(fields: [company], references: [name])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+  CreatedBy User     @relation("CreatedLicense", fields: [createdBy], references: [username])
+  UpdatedBy User     @relation("UpdatedLicense", fields: [updatedBy], references: [username])
 
   @@map("flexi_licenses")
 }

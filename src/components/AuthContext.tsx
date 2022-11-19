@@ -32,12 +32,16 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (loading)
-      fetcher<Res<User>>('/api/auth').then((res) => {
-        setUser(res.data);
-        if (res.data && pathname.includes('login')) replace('/dashboard');
-        if (!res.data && pathname.includes('dashboard')) replace('/login');
-        setLoading(false);
-      });
+      fetcher<Res<User>>('/api/auth')
+        .then((res) => {
+          setUser(res.result);
+          if (res.result && pathname.includes('login')) replace('/dashboard');
+          if (!res.result && pathname.includes('dashboard')) replace('/login');
+        })
+        .catch(() => {
+          replace('/login');
+        })
+        .finally(() => setLoading(false));
   }, [pathname, replace, loading]);
 
   async function login(val: LoginInput) {
@@ -50,11 +54,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       },
     });
 
-    if (res.success) {
-      setUser(res.data);
-      replace('/dashboard');
-    }
-
+    setUser(res.result);
+    replace('/dashboard');
     return res;
   }
 

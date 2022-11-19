@@ -1,4 +1,4 @@
-declare type ResolvePrisma<T extends Promise> = Awaited<ReturnType<T>>;
+declare type EntityType<T extends Promise> = Awaited<ReturnType<T>>[0];
 
 declare type ResData<T = unknown> = {
   success: boolean;
@@ -13,12 +13,8 @@ declare type User = {
   isActive: boolean;
 };
 
-declare type Req<T> = T & {
-  user: User;
-};
-
 declare type Res<T> = {
   success: boolean;
   message: string;
-  data?: T;
+  result?: T;
 };

@@ -9,12 +9,12 @@ import validator from 'libs/validator';
 import { getAuthUser } from 'libs/requireAuth';
 import { createUser } from 'libs/validator/user';
 
-export default async function handler(req: Req<NextReq>, res: NextRes) {
+export default async function handler(req: NextReq, res: NextRes) {
   const user = await getAuthUser(req);
   switch (req.method) {
     case 'GET': {
       if (user) {
-        return res.status(200).json({ success: true, message: 'Already logged in', data: user });
+        return res.status(200).json({ success: true, message: 'Already logged in', result: user });
       } else {
         deleteCookie('accessToken', { req, res, path: '/' });
         return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -45,7 +45,7 @@ export default async function handler(req: Req<NextReq>, res: NextRes) {
         secure: process.env.NODE_ENV === 'production',
       });
 
-      return res.status(200).json({ success: true, message: 'Logged in', data: { token } });
+      return res.status(200).json({ success: true, message: 'Logged in', result: { token } });
     }
 
     case 'DELETE': {

@@ -14,7 +14,16 @@ export default async function fetcher<T = any>(url: string, { method = 'GET', bo
       'Content-Type': typeof body == 'object' ? 'application/json' : '*/*',
       ...opts.headers,
     },
-  }).then((res) => res.json());
+  });
 
-  return res as T;
+  const data = (await res.json()) as any;
+
+  if (res.status < 400) return data as T;
+
+  const err = new Error(data.message || res.statusText) as any;
+  err.name = 'HTTPError';
+  err.status = res.status;
+  err.data = data;
+
+  throw err;
 }
