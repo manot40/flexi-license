@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(cuid())
+  username String  @unique
+  password String
+  role     Role    @default(SUPPORT)
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("flexi_users")
+}
+
+model Company {
+  id            String @id @default(cuid())
+  name          String @unique
+  contactName   String
+  contactNumber String
+
+  license License[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("flexi_companies")
+}
+
+model License {
+  id                String   @id @default(cuid())
+  companyId         String
+  maxUser           Int      @default(1)
+  subscriptionStart DateTime @default(now())
+  subscriptionEnd   DateTime
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("flexi_licenses")
+}
+
+enum Role {
+  ADMIN
+  SALES
+  SUPPORT
+}
