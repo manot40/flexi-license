@@ -2,36 +2,27 @@ import db from 'libs/db';
 import requireAuth from 'libs/requireAuth';
 import QueryHelper, { pagination } from 'libs/queryHelper';
 
-type CompanyKeys = (keyof EntityType<typeof db.company.findMany>)[];
+type CompanyKey = keyof EntityType<typeof db.company.findMany>;
+
+export const keys = ['name', 'createdBy', 'updatedBy', 'contactName', 'contactNumber'] as CompanyKey[];
 
 export default requireAuth(async (req, res) => {
   switch (req.method) {
     case 'GET': {
       try {
-        const count = await db.company.count();
-        const { take, skip, ...paginate } = pagination(req.query, count);
+        const query = new QueryHelper(req.query, keys);
 
-        const query = new QueryHelper(req.query, [
-          'name',
-          'createdBy',
-          'updatedBy',
-          'contactName',
-          'contactNumber',
-        ] as CompanyKeys);
+        const where = query.getWhere();
+        const count = await db.company.count({ where });
+        const { take, skip, ...paginate } = pagination(req.query, count);
 
         const result = await db.company.findMany({
           take,
           skip,
-          where: query.getWhere(),
+          where,
           select: query.getSelect(),
           orderBy: query.getOrderBy(),
         });
-
-        if (!result.length)
-          return res.status(404).json({
-            success: false,
-            message: 'No company found with this criteria',
-          });
 
         return res.status(200).json({
           success: true,
@@ -46,5 +37,10 @@ export default requireAuth(async (req, res) => {
         });
       }
     }
+    default:
+      return res.status(405).json({
+        success: false,
+        message: 'Method not allowed',
+      });
   }
 });

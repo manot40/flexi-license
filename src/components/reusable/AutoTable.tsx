@@ -1,7 +1,8 @@
 import { IconError404 } from '@tabler/icons';
-import { Table, Skeleton, Flex, Text, ScrollArea } from '@mantine/core';
+import { Table, Skeleton, Flex, Text, ScrollArea, LoadingOverlay } from '@mantine/core';
 
 export type ColumnData<T = unknown> = {
+  id?: string;
   key: string;
   title: string;
   render?: (cell: T[any], row: T) => React.ReactNode;
@@ -11,10 +12,19 @@ type AutoTableProps<DataRecord = any> = {
   data?: DataRecord[];
   columns: ColumnData<DataRecord>[];
   footer?: boolean;
+  isLoading?: boolean;
   onClick?: (data: DataRecord) => void;
 } & React.ComponentProps<typeof Table>;
 
-export default function AutoTable({ data, footer, onClick, columns, ...restProps }: AutoTableProps) {
+export default function AutoTable({
+  id = 'id',
+  data,
+  footer,
+  onClick,
+  columns,
+  isLoading,
+  ...restProps
+}: AutoTableProps) {
   const headerElement = columns.map((column, index) =>
     column ? (
       <th key={index}>{column.title}</th>
@@ -25,16 +35,17 @@ export default function AutoTable({ data, footer, onClick, columns, ...restProps
     )
   );
 
-  const tableData = (data || Array(10).fill('')).map((row, index) => (
-    <tr key={index} onClick={() => onClick?.(row)}>
-      {columns.map((column, index) => (
-        <td key={index}>{row ? column.render?.(row[column.key], row) || row[column.key] : <Skeleton h={32} />}</td>
+  const tableData = (data || Array(10).fill('')).map((row, i) => (
+    <tr key={row[id] || i} onClick={() => onClick?.(row)}>
+      {columns.map((column, i) => (
+        <td key={i}>{row ? column.render?.(row[column.key], row) || row[column.key] : <Skeleton h={32} />}</td>
       ))}
     </tr>
   ));
 
   return (
     <ScrollArea>
+      <LoadingOverlay visible={isLoading as boolean} />
       <Table {...restProps}>
         <thead>
           <tr>{headerElement}</tr>

@@ -7,7 +7,9 @@ import requireAuth from 'libs/requireAuth';
 import { authenticateUser } from 'libs/validator/user';
 import QueryHelper, { pagination } from 'libs/queryHelper';
 
-type UserKeys = (keyof EntityType<typeof db.user.findMany>)[];
+type UserKey = keyof EntityType<typeof db.user.findMany>;
+
+export const keys = ['id', 'username', 'role', 'isActive'] as UserKey[];
 
 export default requireAuth(async (req, res) => {
   if (req.user.role != 'ADMIN')
@@ -18,15 +20,16 @@ export default requireAuth(async (req, res) => {
 
   switch (req.method) {
     case 'GET': {
-      const count = await db.user.count();
-      const { take, skip, ...paginate } = pagination(req.query, count);
+      const query = new QueryHelper(req.query, keys);
 
-      const query = new QueryHelper(req.query, ['id', 'username', 'role', 'isActive'] as UserKeys);
+      const where = query.getWhere();
+      const count = await db.user.count({ where });
+      const { take, skip, ...paginate } = pagination(req.query, count);
 
       const result = await db.user.findMany({
         take,
         skip,
-        where: query.getWhere(),
+        where,
         select: query.getSelect({ password: false }),
         orderBy: query.getOrderBy(),
       });
@@ -58,5 +61,10 @@ export default requireAuth(async (req, res) => {
         result,
       });
     }
+    default:
+      return res.status(405).json({
+        success: false,
+        message: 'Method not allowed',
+      });
   }
 });

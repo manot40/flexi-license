@@ -16,5 +16,5 @@ declare type User = {
 declare type Res<T> = {
   success: boolean;
   message: string;
-  result?: T;
+  result: T;
 };

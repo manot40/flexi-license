@@ -16,7 +16,7 @@ export default function requireAuth(cb: (req: NextReqWithUser, res: NextRes) => 
   return async function handler(req: NextReqWithUser, res: NextRes) {
     const user = await getAuthUser(req);
 
-    if (!user)
+    if (!user || !user.isActive)
       return res.status(401).json({
         success: false,
         message: 'Unauthorized, please login to your account',

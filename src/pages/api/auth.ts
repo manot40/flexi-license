@@ -25,16 +25,27 @@ export default async function handler(req: NextReq, res: NextRes) {
       const isInvalid = await validator(createUser, req.body);
       if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
 
-      const user = await db.user.findUnique({
+      const data = await db.user.findUnique({
         where: { username: req.body.username },
       });
-      if (!user) return res.status(400).json({ success: false, message: 'Invalid username or password' });
 
-      const isPasswordValid = bcrypt.compareSync(req.body.password, user.password);
+      if (!data)
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid username or password',
+        });
+
+      if (!data.isActive)
+        return res.status(403).json({
+          success: false,
+          message: 'Account inactive, please contact your administrator',
+        });
+
+      const isPasswordValid = bcrypt.compareSync(req.body.password, data.password);
       if (!isPasswordValid) return res.status(400).json({ success: false, message: 'Invalid username or password' });
 
-      const { createdAt, updatedAt, password, ..._user } = user;
-      const token = await sign(_user);
+      const { createdAt, updatedAt, password, ...user } = data;
+      const token = await sign(user);
       setCookie('accessToken', token, {
         req,
         res,
@@ -45,7 +56,11 @@ export default async function handler(req: NextReq, res: NextRes) {
         secure: process.env.NODE_ENV === 'production',
       });
 
-      return res.status(200).json({ success: true, message: 'Logged in', result: { token } });
+      return res.status(200).json({
+        success: true,
+        message: 'Logged in',
+        result: { user, token },
+      });
     }
 
     case 'DELETE': {

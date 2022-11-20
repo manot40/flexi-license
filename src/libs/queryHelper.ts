@@ -81,4 +81,16 @@ export default class QueryHelper {
 
     return orderBy;
   }
+
+  public parseData(body: any) {
+    const data: any = {};
+
+    Object.keys(body).forEach((key) => {
+      if (this.keys.includes(key)) {
+        data[key] = body[key];
+      }
+    });
+
+    return data;
+  }
 }

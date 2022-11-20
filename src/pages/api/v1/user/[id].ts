@@ -1,7 +1,7 @@
 import db from 'libs/db';
-import requireAuth from 'libs/requireAuth';
-
 import { keys } from '.';
+import bcrypt from 'bcryptjs';
+import requireAuth from 'libs/requireAuth';
 import QueryHelper from 'libs/queryHelper';
 
 export default requireAuth(async (req, res) => {
@@ -18,12 +18,12 @@ export default requireAuth(async (req, res) => {
   switch (req.method) {
     case 'GET': {
       try {
-        const result = await db.company.findUnique({ where: { id }, select: query.getSelect() });
+        const result = await db.user.findUnique({ where: { id }, select: query.getSelect() });
 
         if (!result)
           return res.status(404).json({
             success: false,
-            message: 'Company not found',
+            message: 'User not found',
           });
 
         return res.status(200).json({
@@ -40,10 +40,32 @@ export default requireAuth(async (req, res) => {
     }
     case 'PUT': {
       try {
-        const result = await db.company.update({
+        const result = await db.user.update({
           where: { id },
-          data: req.body,
+          data: {
+            username: req.body.username,
+            role: req.body.role,
+            isActive: req.body.isActive,
+          },
         });
+
+        return res.status(200).json({
+          success: true,
+          result,
+        });
+      } catch (err: any) {
+        console.error(err.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Internal server error',
+        });
+      }
+    }
+    case 'PATCH': {
+      try {
+        const { password, ...data } = query.parseData(req.body);
+
+        const result = await db.user.update({ where: { id }, data });
 
         return res.status(200).json({
           success: true,

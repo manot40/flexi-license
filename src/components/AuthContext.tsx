@@ -9,7 +9,8 @@ type AuthContextType = {
   user?: User;
   loading: boolean;
   logout: () => void;
-  login: (val: LoginInput) => Promise<Res<User>>;
+  checkRole: (role: string) => boolean;
+  login: (val: LoginInput) => Promise<User>;
 };
 
 type LoginInput = {
@@ -45,7 +46,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [pathname, replace, loading]);
 
   async function login(val: LoginInput) {
-    const res = await fetcher<Res<User>>('/api/auth', {
+    const res = await fetcher<Res<{ user: User; token: string }>>('/api/auth', {
       method: 'POST',
       body: {
         username: val.username,
@@ -54,9 +55,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       },
     });
 
-    setUser(res.result);
+    setUser(res.result.user);
     replace('/dashboard');
-    return res;
+    return res.result.user;
   }
 
   function logout() {
@@ -65,12 +66,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     replace('/login');
   }
 
+  const checkRole = (role: string) => role === user?.role;
+
   const value = useMemo(
     () => ({
       user,
       login,
       logout,
       loading,
+      checkRole,
     }),
     // eslint-disable-next-line
     [user, loading]
