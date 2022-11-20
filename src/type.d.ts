@@ -7,7 +7,7 @@ declare type ResData<T = unknown> = {
 };
 
 declare type User = {
-  id: number;
+  id: string;
   username: string;
   role: string;
   isActive: boolean;

@@ -43,7 +43,35 @@ export default requireAuth(async (req, res) => {
       try {
         const result = await db.company.update({
           where: { id },
-          data: req.body,
+          data: {
+            name: req.body.name,
+            contactName: req.body.contactName,
+            contactNumber: req.body.contactNumber,
+            updatedBy: req.user.id,
+          },
+        });
+
+        return res.status(200).json({
+          success: true,
+          result,
+        });
+      } catch (err: any) {
+        console.error(err.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Internal server error',
+        });
+      }
+    }
+
+    case 'PATCH': {
+      try {
+        const result = await db.company.update({
+          where: { id },
+          data: {
+            ...query.parseData(req.body),
+            updatedBy: req.user.id,
+          },
         });
 
         return res.status(200).json({
