@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { IconError404 } from '@tabler/icons';
 import { Table, Skeleton, Flex, Text, ScrollArea, LoadingOverlay } from '@mantine/core';
 
@@ -14,6 +15,7 @@ type AutoTableProps<DataRecord = any> = {
   columns: ColumnData<DataRecord>[];
   footer?: boolean;
   isLoading?: boolean;
+  useScroll?: boolean;
   onClick?: (data: DataRecord) => void;
 } & Omit<React.ComponentProps<typeof Table>, 'onClick'>;
 
@@ -24,6 +26,7 @@ export default function AutoTable({
   onClick,
   columns,
   isLoading,
+  useScroll = true,
   ...restProps
 }: AutoTableProps) {
   const headerElement = columns.map((column, index) =>
@@ -46,8 +49,10 @@ export default function AutoTable({
     </tr>
   ));
 
+  const Scroll = useScroll ? ScrollArea : Fragment;
+
   return (
-    <ScrollArea>
+    <Scroll>
       <LoadingOverlay zIndex={100} visible={isLoading as boolean} />
       <Table {...restProps}>
         <thead>
@@ -68,6 +73,6 @@ export default function AutoTable({
           </div>
         </Flex>
       )}
-    </ScrollArea>
+    </Scroll>
   );
 }

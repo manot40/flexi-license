@@ -100,6 +100,6 @@ export default requireAuth(
     }
   },
   {
-    allowRule: [{ method: '^((?!GET).)*$', role: ['ADMIN', 'SALES'] }],
+    allowRule: [{ method: '.*', role: ['ADMIN', 'SALES'] }],
   }
 );

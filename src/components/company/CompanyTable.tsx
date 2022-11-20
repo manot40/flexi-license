@@ -2,21 +2,29 @@ import fetcher from 'libs/fetcher';
 
 import useSWR from 'swr';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { useAuth } from 'components/AuthContext';
-import { useDebouncedState } from '@mantine/hooks';
+import { useDebouncedState, useViewportSize } from '@mantine/hooks';
 
 import CompanyModal from './CompanyModal';
-import { AutoTable } from 'components/reusable';
-import { Box, Button, Center, Flex, Input, Pagination, Space, Title } from '@mantine/core';
+import { AutoTable, ConfirmPop } from 'components/reusable';
+import { Box, Button, Center, Flex, Input, Pagination, Space } from '@mantine/core';
+
+import { IconTrash, IconEdit } from '@tabler/icons';
 
 export default function UserTable() {
+  const { push } = useRouter();
   const { checkRole } = useAuth();
+  const { width } = useViewportSize();
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useDebouncedState('', 300);
   const [company, setCompany] = useState<Partial<Company>>();
 
   const isSales = checkRole('SALES');
   const { data, isValidating, mutate } = useSWR<Res<User[]>>(`/api/v1/company?page=${page}&name=${search}`, fetcher);
+
+  const handleDelete = async (id: string) => console.log(id);
 
   return (
     <>
@@ -29,22 +37,18 @@ export default function UserTable() {
         />
       )}
       <Box>
-        <Title size={18} order={2}>
-          Manage Company
-        </Title>
-        <Space h={12} />
-
-        <Flex gap={12}>
+        <Flex gap={12} justify="space-between">
           <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
           {isSales && <Button onClick={() => setCompany(defaultData)}>New Company</Button>}
         </Flex>
         <Space h={16} />
         <AutoTable
           highlightOnHover
-          columns={columns}
           data={data?.result}
+          useScroll={width <= 768}
           isLoading={isValidating}
-          onClick={isSales ? setCompany : undefined}
+          columns={columns(setCompany, handleDelete)}
+          onClick={(row) => push(`/dashboard/company/${row.id}`)}
         />
         <Space h={16} />
         {data && !!data.result.length && (
@@ -64,7 +68,7 @@ const defaultData = {
   contactNumber: '',
 } as Partial<Company>;
 
-const columns = [
+const columns = (mutator: any, deleteHandler: any) => [
   {
     key: 'name',
     title: 'Company Name',
@@ -89,5 +93,21 @@ const columns = [
     key: 'updatedBy',
     title: 'Updated By',
     width: 120,
+  },
+  {
+    key: 'id',
+    title: 'Action',
+    render: (cell: string, row: Company) => (
+      <Flex onClick={(e) => e.stopPropagation()} gap={8}>
+        <Button compact variant="light" onClick={() => mutator(row)}>
+          <IconEdit size={16} />
+        </Button>
+        <ConfirmPop color="red" onConfirm={() => deleteHandler(cell)}>
+          <Button compact color="red">
+            <IconTrash size={16} />
+          </Button>
+        </ConfirmPop>
+      </Flex>
+    ),
   },
 ];

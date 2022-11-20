@@ -1,17 +1,26 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-
 import { useAuth } from './AuthContext';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { useViewportSize } from '@mantine/hooks';
+
+import Link from 'next/link';
 import { NavigationProgress, startNavigationProgress, completeNavigationProgress } from '@mantine/nprogress';
 import { Navbar, Center, Tooltip, UnstyledButton, createStyles, Stack, Text, Burger, Box } from '@mantine/core';
 
-import { TablerIcon, IconHome2, IconLogout, IconAffiliate, IconUsers } from '@tabler/icons';
+import {
+  type TablerIcon,
+  IconHome2,
+  IconUsers,
+  IconLogout,
+  IconAffiliate,
+  IconAddressBook,
+  IconFileCertificate,
+} from '@tabler/icons';
 
 export default function Navigation() {
   const r = useRouter();
-  const { logout, user } = useAuth();
   const { width } = useViewportSize();
+  const { logout, checkRole } = useAuth();
   const [isOpen, setOpen] = useState(false);
 
   const isWide = width >= 768;
@@ -60,15 +69,16 @@ export default function Navigation() {
         <Navbar.Section grow mt={50}>
           <Stack justify="center" spacing={0}>
             {menu
-              .filter(({ roles }) => (roles ? roles.includes(user!.role) : true))
+              .filter(({ roles }) => (roles ? checkRole(roles as any) : true))
               .map((link) => (
-                <NavbarLink
-                  {...link}
-                  isWide={isWide}
-                  key={link.label}
-                  active={!link.label ? r.pathname === '/dashboard' : r.pathname.includes(link.label)}
-                  onClick={() => (setOpen(!open), r.push(`/dashboard/${link.label}`))}
-                />
+                <Link key={link.label} href={`/dashboard/${link.label}`}>
+                  <NavbarLink
+                    {...link}
+                    isWide={isWide}
+                    onClick={() => setOpen(!open)}
+                    active={!link.label ? r.pathname === '/dashboard' : r.pathname.includes(link.label)}
+                  />
+                </Link>
               ))}
           </Stack>
         </Navbar.Section>
@@ -162,5 +172,7 @@ function NavbarLink({ icon: Icon, label: _label, active, onClick, isWide }: Navb
 
 const menu = [
   { icon: IconHome2, label: '' },
+  { icon: IconAddressBook, label: 'company', roles: ['ADMIN', 'SALES'] },
+  { icon: IconFileCertificate, label: 'license', roles: ['ADMIN', 'SUPPORT'] },
   { icon: IconUsers, label: 'users', roles: ['ADMIN'] },
 ];

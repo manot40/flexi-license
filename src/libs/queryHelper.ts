@@ -66,9 +66,9 @@ export default class QueryHelper {
   }
 
   public getOrderBy() {
-    const orderBy: any = {};
+    const orderBy: any = [];
 
-    if (typeof this.query.order !== 'string') return undefined;
+    if (typeof this.query.order !== 'string') return { createdAt: 'desc' };
 
     const split = this.query.order.split(',').map((item) => item.trim().split(':'));
     const filtered = split.filter((item) => this.keys.includes(item[0]));
@@ -76,7 +76,7 @@ export default class QueryHelper {
     if (!filtered.length) return undefined;
 
     filtered.forEach((item) => {
-      orderBy[item[0]] = item[1] === 'desc' ? 'desc' : 'asc';
+      orderBy.push({ [item[0]]: item[1] === 'desc' ? 'desc' : 'asc' });
     });
 
     return orderBy;

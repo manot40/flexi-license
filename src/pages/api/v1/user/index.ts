@@ -9,7 +9,16 @@ import QueryHelper, { pagination } from 'libs/queryHelper';
 
 type UserKey = keyof EntityType<typeof db.user.findMany>;
 
-export const keys = ['id', 'username', 'role', 'isActive'] as UserKey[];
+export const keys = [
+  'id',
+  'username',
+  'role',
+  'isActive',
+  'updatedAt',
+  'createdAt',
+  'updatedBy',
+  'createdBy',
+] as UserKey[];
 
 export default requireAuth(
   async (req, res) => {

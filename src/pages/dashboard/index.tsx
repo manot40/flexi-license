@@ -1,5 +1,4 @@
-import { Box, SimpleGrid, Space, Title } from '@mantine/core';
-import CompanyTable from 'components/company/CompanyTable';
+import { Box, Space, Title } from '@mantine/core';
 import { StatsCard } from 'components/reusable';
 
 export default function Dashboard() {
@@ -15,10 +14,6 @@ export default function Dashboard() {
           { label: 'Four', value: 4000 },
         ]}
       />
-      <Space h={32} />
-      <SimpleGrid cols={2} breakpoints={[{ maxWidth: 'xl', cols: 1 }]} spacing="xl">
-        <CompanyTable />
-      </SimpleGrid>
     </Box>
   );
 }

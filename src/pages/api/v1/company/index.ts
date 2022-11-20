@@ -5,7 +5,15 @@ import QueryHelper, { pagination } from 'libs/queryHelper';
 
 type CompanyKey = keyof EntityType<typeof db.company.findMany>;
 
-export const keys = ['name', 'createdBy', 'updatedBy', 'contactName', 'contactNumber'] as CompanyKey[];
+export const keys = [
+  'name',
+  'contactName',
+  'contactNumber',
+  'updatedAt',
+  'createdAt',
+  'updatedBy',
+  'createdBy',
+] as CompanyKey[];
 
 export default requireAuth(
   async (req, res) => {
