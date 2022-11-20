@@ -16,8 +16,6 @@ export const keys = [
   'isActive',
   'updatedAt',
   'createdAt',
-  'updatedBy',
-  'createdBy',
 ] as UserKey[];
 
 export default requireAuth(
