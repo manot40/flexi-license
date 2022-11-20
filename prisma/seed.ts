@@ -24,30 +24,26 @@ async function seed() {
     },
   });
 
-  await prisma.company
-    .create({
-      data: {
-        name: 'Acme. Inc.',
-        contactName: 'John Doe',
-        contactNumber: '0123456789',
-        createdBy: user.username,
-        updatedBy: user.username,
-      },
-    })
-    .catch(() => {});
+  const company = await prisma.company.create({
+    data: {
+      name: 'Acme. Inc.',
+      contactName: 'John Doe',
+      contactNumber: '0123456789',
+      createdBy: user.username,
+      updatedBy: user.username,
+    },
+  });
 
-  await prisma.license
-    .create({
-      data: {
-        company: 'Acme. Inc.',
-        maxUser: 69,
-        subscriptionStart: day.toDate(),
-        subscriptionEnd: day.add(1, 'year').toDate(),
-        createdBy: user.username,
-        updatedBy: user.username,
-      },
-    })
-    .catch(() => {});
+  await prisma.license.create({
+    data: {
+      company: company.id,
+      maxUser: 69,
+      subscriptionStart: day.toDate(),
+      subscriptionEnd: day.add(1, 'year').toDate(),
+      createdBy: user.username,
+      updatedBy: user.username,
+    },
+  });
 
   console.log(`Database has been seeded. 🌱`);
 }

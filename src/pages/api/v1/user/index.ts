@@ -40,27 +40,38 @@ export default requireAuth(async (req, res) => {
         result,
       });
     }
+
     case 'POST': {
-      const isInvalid = await validator(authenticateUser, req.body);
+      try {
+        const isInvalid = await validator(authenticateUser, req.body);
 
-      if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
+        if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
 
-      const user = await db.user.create({
-        data: {
-          username: req.body.username,
-          password: bcrypt.hashSync(req.body.password, 10),
-          role: req.body.role,
-        },
-      });
+        const user = await db.user.create({
+          data: {
+            username: req.body.username,
+            password: bcrypt.hashSync(req.body.password, 10),
+            role: req.body.role,
+          },
+        });
 
-      const { createdAt, updatedAt, password, ...result } = user;
+        const { createdAt, updatedAt, password, ...result } = user;
 
-      return res.status(200).json({
-        success: true,
-        message: 'User created',
-        result,
-      });
+        return res.status(200).json({
+          success: true,
+          message: 'User created',
+          result,
+        });
+      } catch (err: any) {
+        console.error(err.message);
+        const message = /unique/i.test(err.message) ? 'User Already Exist' : 'Internal server error';
+        return res.status(500).json({
+          success: false,
+          message,
+        });
+      }
     }
+
     default:
       return res.status(405).json({
         success: false,

@@ -5,6 +5,7 @@ export type ColumnData<T = unknown> = {
   id?: string;
   key: string;
   title: string;
+  width?: number | string;
   render?: (cell: T[any], row: T) => React.ReactNode;
 };
 
@@ -27,7 +28,9 @@ export default function AutoTable({
 }: AutoTableProps) {
   const headerElement = columns.map((column, index) =>
     column ? (
-      <th key={index}>{column.title}</th>
+      <th style={{ width: column.width }} key={index}>
+        {column.title}
+      </th>
     ) : (
       <th key={index}>
         <Skeleton h={16} />

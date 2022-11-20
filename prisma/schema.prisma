@@ -53,7 +53,7 @@ model License {
   subscriptionStart DateTime @default(now())
   subscriptionEnd   DateTime
 
-  Company Company @relation(fields: [company], references: [name])
+  Company Company @relation(fields: [company], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

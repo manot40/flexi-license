@@ -11,6 +11,7 @@ type UserModalProps = {
 
 export default function UserModal({ children, onSubmitted }: UserModalProps) {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm({
     initialValues: {
@@ -26,12 +27,8 @@ export default function UserModal({ children, onSubmitted }: UserModalProps) {
     },
   });
 
-  const renderTrigger = (child: React.ReactElement) =>
-    cloneElement(child, {
-      onClick: (e: any) => (child.props.onClick?.(e), setOpen(true)),
-    });
-
   const handleSubmit = async (data: typeof form.values) => {
+    setLoading(true);
     try {
       const { retryPass, ...body } = data;
       const res = await fetcher<Res<User>>('/api/v1/user', { method: 'POST', body });
@@ -44,11 +41,12 @@ export default function UserModal({ children, onSubmitted }: UserModalProps) {
     } catch (err: any) {
       showNotification({ color: 'red', title: 'Failed to create user', message: err.message });
     }
+    setLoading(false);
   };
 
   return (
     <>
-      {isValidElement(children) ? renderTrigger(children) : null}
+      {isValidElement(children) ? renderTrigger(children, setOpen) : null}
       <Modal title="Create New User" opened={open} onClose={() => setOpen(false)}>
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack>
@@ -73,10 +71,17 @@ export default function UserModal({ children, onSubmitted }: UserModalProps) {
               {...form.getInputProps('retryPass')}
             />
             <Space />
-            <Button type="submit">Submit</Button>
+            <Button loading={loading} type="submit">
+              Submit
+            </Button>
           </Stack>
         </form>
       </Modal>
     </>
   );
 }
+
+const renderTrigger = (child: React.ReactElement, mutator: (v: boolean) => void) =>
+  cloneElement(child, {
+    onClick: (e: any) => (child.props.onClick?.(e), mutator(true)),
+  });

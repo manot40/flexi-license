@@ -4,7 +4,7 @@ import Navigation from 'components/Navigation';
 
 export default function AppLayout({ children }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <Flex style={{ height: '100vh' }}>
+    <Flex style={{ height: '100%' }}>
       <Navigation />
       <Box
         sx={(theme) => ({

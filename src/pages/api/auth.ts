@@ -68,5 +68,11 @@ export default async function handler(req: NextReq, res: NextRes) {
       deleteCookie('accessToken', { req, res, path: '/' });
       return res.status(200).json({ success: true, message: 'Logged out' });
     }
+
+    default:
+      return res.status(405).json({
+        success: false,
+        message: 'Method not allowed',
+      });
   }
 }

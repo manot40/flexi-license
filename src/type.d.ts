@@ -17,4 +17,9 @@ declare type Res<T> = {
   success: boolean;
   message: string;
   result: T;
+  paginate?: {
+    totalPage: number;
+    total: number;
+    page: number;
+  };
 };

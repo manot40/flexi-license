@@ -1,18 +1,20 @@
 import useSWR from 'swr';
+import { useState } from 'react';
 import fetcher from 'libs/fetcher';
 import { useDebouncedState } from '@mantine/hooks';
 
 import UserModal from './UserModal';
 import { AutoTable } from 'components/reusable';
-import { Box, Button, Chip, Flex, Input, Select, Space } from '@mantine/core';
+import { Box, Button, Center, Chip, Flex, Input, Pagination, Select, Space } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 
 export default function UserTable() {
+  const [page, setPage] = useState(1);
   const [role, setRole] = useDebouncedState('', 100);
   const [search, setSearch] = useDebouncedState('', 300);
 
   const { data, isValidating, mutate } = useSWR<Res<User[]>>(
-    `/api/v1/user?username=${search}&role=${role}:equals`,
+    `/api/v1/user?page=${page}&username=${search}&role=${role}:equals`,
     fetcher
   );
 
@@ -29,18 +31,16 @@ export default function UserTable() {
     {
       key: 'username',
       title: 'User Name',
-      render: (cell: string, { id }: User) => (
-        <Input defaultValue={cell} styles={ghostInput} onBlur={(e) => updateUser(id, { username: e.target.value })} />
-      ),
     },
     {
       key: 'role',
       title: 'User Role',
+      width: 200,
       render: (cell: string, { id }: User) => (
         <Select
           defaultValue={cell}
-          styles={ghostInput}
           data={roleSelectData}
+          styles={{ input: { border: 0 } }}
           onChange={(role) => updateUser(id, { role })}
         />
       ),
@@ -48,12 +48,11 @@ export default function UserTable() {
     {
       key: 'isActive',
       title: 'User Status',
+      width: 120,
       render: (cell: boolean, row: User) => (
-        <div style={{ width: 100 }}>
-          <Chip onClick={() => updateUser(row.id, { isActive: !row.isActive })} checked={cell}>
-            {cell ? 'Active' : 'Inactive'}
-          </Chip>
-        </div>
+        <Chip onClick={() => updateUser(row.id, { isActive: !row.isActive })} checked={cell}>
+          {cell ? 'Active' : 'Inactive'}
+        </Chip>
       ),
     },
   ];
@@ -78,11 +77,15 @@ export default function UserTable() {
       </Flex>
       <Space h={16} />
       <AutoTable highlightOnHover columns={columns} data={data?.result} isLoading={isValidating} />
+      <Space h={16} />
+      {data && (
+        <Center>
+          <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
+        </Center>
+      )}
     </Box>
   );
 }
-
-const ghostInput = { input: { border: 0 } };
 
 const roleSelectData = [
   { value: 'ADMIN', label: 'Admin' },

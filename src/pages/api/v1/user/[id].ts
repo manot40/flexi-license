@@ -38,6 +38,7 @@ export default requireAuth(async (req, res) => {
         });
       }
     }
+
     case 'PUT': {
       try {
         const result = await db.user.update({
@@ -61,6 +62,7 @@ export default requireAuth(async (req, res) => {
         });
       }
     }
+
     case 'PATCH': {
       try {
         const { password, ...data } = query.parseData(req.body);
@@ -79,6 +81,7 @@ export default requireAuth(async (req, res) => {
         });
       }
     }
+
     default:
       return res.status(405).json({
         success: false,
