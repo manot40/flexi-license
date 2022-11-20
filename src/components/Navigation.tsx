@@ -43,7 +43,7 @@ export default function Navigation() {
         width={{ base: 280, sm: 80 }}
         sx={(theme) => ({
           top: 0,
-          zIndex: 999,
+          zIndex: 199,
           position: 'fixed',
           transition: 'translate 0.2s ease-in-out',
           '@media (min-width: 768px)': {
@@ -84,8 +84,8 @@ export default function Navigation() {
             position: 'fixed',
             bottom: 24,
             right: 24,
-            zIndex: 999,
-            borderRadius: 999,
+            zIndex: 199,
+            borderRadius: 199,
             background: theme.fn.variant({
               variant: 'filled',
               color: theme.primaryColor,

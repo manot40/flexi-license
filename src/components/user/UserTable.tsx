@@ -27,36 +27,6 @@ export default function UserTable() {
     }
   };
 
-  const columns = [
-    {
-      key: 'username',
-      title: 'User Name',
-    },
-    {
-      key: 'role',
-      title: 'User Role',
-      width: 200,
-      render: (cell: string, { id }: User) => (
-        <Select
-          defaultValue={cell}
-          data={roleSelectData}
-          styles={{ input: { border: 0 } }}
-          onChange={(role) => updateUser(id, { role })}
-        />
-      ),
-    },
-    {
-      key: 'isActive',
-      title: 'User Status',
-      width: 120,
-      render: (cell: boolean, row: User) => (
-        <Chip onClick={() => updateUser(row.id, { isActive: !row.isActive })} checked={cell}>
-          {cell ? 'Active' : 'Inactive'}
-        </Chip>
-      ),
-    },
-  ];
-
   return (
     <Box>
       <Flex gap={12} justify="space-between">
@@ -76,9 +46,9 @@ export default function UserTable() {
         </Box>
       </Flex>
       <Space h={16} />
-      <AutoTable highlightOnHover columns={columns} data={data?.result} isLoading={isValidating} />
+      <AutoTable highlightOnHover columns={columns(updateUser)} data={data?.result} isLoading={isValidating} />
       <Space h={16} />
-      {data && (
+      {data && !!data.result.length && (
         <Center>
           <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
         </Center>
@@ -91,4 +61,34 @@ const roleSelectData = [
   { value: 'ADMIN', label: 'Admin' },
   { value: 'SUPPORT', label: 'Support' },
   { value: 'SALES', label: 'Sales' },
+];
+
+const columns = (mutator: (id: string, body: any) => void) => [
+  {
+    key: 'username',
+    title: 'User Name',
+  },
+  {
+    key: 'role',
+    title: 'User Role',
+    width: 200,
+    render: (cell: string, { id }: User) => (
+      <Select
+        defaultValue={cell}
+        data={roleSelectData}
+        styles={{ input: { border: 0 } }}
+        onChange={(role) => mutator(id, { role })}
+      />
+    ),
+  },
+  {
+    key: 'isActive',
+    title: 'User Status',
+    width: 120,
+    render: (cell: boolean, row: User) => (
+      <Chip onClick={() => mutator(row.id, { isActive: !row.isActive })} checked={cell}>
+        {cell ? 'Active' : 'Inactive'}
+      </Chip>
+    ),
+  },
 ];

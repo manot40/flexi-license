@@ -9,7 +9,7 @@ type AuthContextType = {
   user?: User;
   loading: boolean;
   logout: () => void;
-  checkRole: (role: string) => boolean;
+  checkRole: (role: User['role'] | User['role'][]) => boolean;
   login: (val: LoginInput) => Promise<User>;
 };
 
@@ -66,7 +66,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     replace('/login');
   }
 
-  const checkRole = (role: string) => role === user?.role;
+  const checkRole = (role: User['role'] | User['role'][]) => {
+    if (user!.role === 'ADMIN') return true;
+    if (Array.isArray(role)) return role.includes(user!.role);
+    return user!.role === role;
+  };
 
   const value = useMemo(
     () => ({

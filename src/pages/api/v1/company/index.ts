@@ -1,5 +1,6 @@
 import db from 'libs/db';
 import requireAuth from 'libs/requireAuth';
+import validator, { createCompany } from 'libs/validator';
 import QueryHelper, { pagination } from 'libs/queryHelper';
 
 type CompanyKey = keyof EntityType<typeof db.company.findMany>;
@@ -27,6 +28,32 @@ export default requireAuth(async (req, res) => {
         return res.status(200).json({
           success: true,
           paginate,
+          result,
+        });
+      } catch (err: any) {
+        console.error(err.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Internal server error',
+        });
+      }
+    }
+
+    case 'POST': {
+      try {
+        const errMsg = await validator(createCompany, req.body);
+        if (errMsg) return res.status(400).json({ success: false, message: errMsg });
+
+        const result = await db.company.create({
+          data: {
+            ...req.body,
+            createdBy: req.user.username,
+            updatedBy: req.user.username,
+          },
+        });
+
+        return res.status(201).json({
+          success: true,
           result,
         });
       } catch (err: any) {

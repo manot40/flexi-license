@@ -10,4 +10,6 @@ const validator = async (schema: AnySchema, data: unknown) => {
   }
 };
 
+export { createCompany, updateCompany } from './company';
+export { createUser, authenticateUser } from './user';
 export default validator;

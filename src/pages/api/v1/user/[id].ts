@@ -1,8 +1,8 @@
 import db from 'libs/db';
-import { keys } from '.';
-import bcrypt from 'bcryptjs';
 import requireAuth from 'libs/requireAuth';
 import QueryHelper from 'libs/queryHelper';
+
+import { keys } from '.';
 
 export default requireAuth(async (req, res) => {
   const id = req.query.id;
@@ -13,12 +13,12 @@ export default requireAuth(async (req, res) => {
       message: 'Company id not provided',
     });
 
-  const query = new QueryHelper(req.query, keys);
+  const qh = new QueryHelper(req.query, keys);
 
   switch (req.method) {
     case 'GET': {
       try {
-        const result = await db.user.findUnique({ where: { id }, select: query.getSelect() });
+        const result = await db.user.findUnique({ where: { id }, select: qh.getSelect() });
 
         if (!result)
           return res.status(404).json({
@@ -65,7 +65,7 @@ export default requireAuth(async (req, res) => {
 
     case 'PATCH': {
       try {
-        const { password, ...data } = query.parseData(req.body);
+        const { password, ...data } = qh.parseData(req.body);
 
         const result = await db.user.update({ where: { id }, data });
 

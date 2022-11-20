@@ -15,7 +15,7 @@ type AutoTableProps<DataRecord = any> = {
   footer?: boolean;
   isLoading?: boolean;
   onClick?: (data: DataRecord) => void;
-} & React.ComponentProps<typeof Table>;
+} & Omit<React.ComponentProps<typeof Table>, 'onClick'>;
 
 export default function AutoTable({
   id = 'id',
@@ -39,7 +39,7 @@ export default function AutoTable({
   );
 
   const tableData = (data || Array(10).fill('')).map((row, i) => (
-    <tr key={row[id] || i} onClick={() => onClick?.(row)}>
+    <tr key={row[id] || i} onClick={() => onClick?.(row)} style={{ cursor: onClick && 'pointer' }}>
       {columns.map((column, i) => (
         <td key={i}>{row ? column.render?.(row[column.key], row) || row[column.key] : <Skeleton h={32} />}</td>
       ))}
@@ -48,7 +48,7 @@ export default function AutoTable({
 
   return (
     <ScrollArea>
-      <LoadingOverlay visible={isLoading as boolean} />
+      <LoadingOverlay zIndex={100} visible={isLoading as boolean} />
       <Table {...restProps}>
         <thead>
           <tr>{headerElement}</tr>

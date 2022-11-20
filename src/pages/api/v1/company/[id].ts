@@ -1,8 +1,9 @@
 import db from 'libs/db';
 import requireAuth from 'libs/requireAuth';
+import QueryHelper from 'libs/queryHelper';
+import validator, { createCompany } from 'libs/validator';
 
 import { keys } from '.';
-import QueryHelper from 'libs/queryHelper';
 
 export default requireAuth(async (req, res) => {
   const id = req.query.id;
@@ -41,13 +42,16 @@ export default requireAuth(async (req, res) => {
 
     case 'PUT': {
       try {
+        const errMsg = await validator(createCompany, req.body);
+        if (errMsg) return res.status(400).json({ success: false, message: errMsg });
+
         const result = await db.company.update({
           where: { id },
           data: {
             name: req.body.name,
             contactName: req.body.contactName,
             contactNumber: req.body.contactNumber,
-            updatedBy: req.user.id,
+            updatedBy: req.user.username,
           },
         });
 

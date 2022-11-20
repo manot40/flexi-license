@@ -6,13 +6,6 @@ declare type ResData<T = unknown> = {
   data?: T;
 };
 
-declare type User = {
-  id: string;
-  username: string;
-  role: string;
-  isActive: boolean;
-};
-
 declare type Res<T> = {
   success: boolean;
   message: string;
@@ -23,3 +16,9 @@ declare type Res<T> = {
     page: number;
   };
 };
+
+declare type User = Omit<import('@prisma/client').User, 'password'>;
+
+declare type License = import('@prisma/client').License;
+
+declare type Company = import('@prisma/client').Company;
