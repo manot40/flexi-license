@@ -12,8 +12,10 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "prisma:studio": "prisma studio",
+    "type-check": "tsc --noEmit",
     "format:check": "prettier --check src/**/*.{js,jsx,ts,tsx,json,css,md}",
-    "format:write": "prettier --write src/**/*.{js,jsx,ts,tsx,json,css,md}"
+    "format:write": "prettier --write src/**/*.{js,jsx,ts,tsx,json,css,md}",
+    "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
     "@emotion/react": "^11.10.5",

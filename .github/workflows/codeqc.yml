@@ -1,0 +1,27 @@
+name: 'codeqc'
+on: [push, pull_request]
+
+jobs:
+  codeqc:
+    name: 'Code Quality Check'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v3
+      - name: 'Using Node.js ${{ matrix.node-version }}'
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: 'Install dependencies'
+        run: npm install
+      - name: 'Formatting check'
+        run: npm run format:check
+      - name: 'Lint'
+        run: npm run lint
+      - name: 'Type Checking'
+        run: npm run type-check
+      - name: 'Unit Test'
+        run: npm run test
