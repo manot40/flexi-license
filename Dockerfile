@@ -3,8 +3,8 @@ ARG DATABASE_URL
 ARG NEXT_JWT_SECRET
 ARG NEXT_JWT_EXPIRATION=1d
 
-FROM node:16-alpine AS builder
-RUN apk add --no-cache libc6-compat openssl ca-certificates
+FROM node:16-slim AS builder
+RUN apt update && apt install openssl ca-certificates -y
 WORKDIR /app
 
 COPY . .
@@ -17,8 +17,8 @@ RUN npm run db:generate
 RUN npm run build
 
 # Production build start
-FROM node:16-alpine AS runner
-RUN apk add --no-cache libc6-compat openssl ca-certificates
+FROM node:16-slim AS runner
+RUN apt update && apt install openssl ca-certificates -y
 WORKDIR /app
 
 # Arguments for the production build
