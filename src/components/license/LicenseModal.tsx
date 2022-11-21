@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 import fetcher from 'libs/fetcher';
 
 import { useForm } from '@mantine/form';
+import { CompanySelect } from 'components/reusable';
 import { showNotification } from '@mantine/notifications';
 import { DateRangePicker, type DateRangePickerValue } from '@mantine/dates';
-import { Modal, TextInput, NumberInput, Stack, Button, Space } from '@mantine/core';
+import { Modal, NumberInput, Stack, Button, Space } from '@mantine/core';
 
 type LicenseModalProps = {
   opened: boolean;
@@ -62,7 +63,7 @@ export default function LicenseModal({ opened, value, onClose, onSubmit }: Licen
     <Modal opened={opened} onClose={() => onClose?.()} title={isEdit ? `Edit license data` : 'Create New License'}>
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
-          <TextInput w="100%" label="Company ID" placeholder="ABC123" {...form.getInputProps('companyId')} />
+          <CompanySelect w="100%" label="Company" placeholder="Select Company" {...form.getInputProps('companyId')} />
           <NumberInput w="100%" label="Max User" placeholder="" {...form.getInputProps('maxUser')} />
           <DateRangePicker w="100%" label="Subscription Period" value={subsRange} onChange={setSubsRange} />
           <Space />

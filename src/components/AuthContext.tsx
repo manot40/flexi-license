@@ -40,7 +40,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           if (!res.result && pathname.includes('dashboard')) replace('/login');
         })
         .catch(() => {
-          replace('/login');
+          if (pathname.includes('dashboard')) replace('/login');
         })
         .finally(() => setLoading(false));
   }, [pathname, replace, loading]);

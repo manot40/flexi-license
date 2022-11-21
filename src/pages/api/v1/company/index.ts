@@ -4,6 +4,7 @@ import validator, { createCompany } from 'libs/validator';
 import QueryHelper, { pagination } from 'libs/queryHelper';
 
 export const keys = [
+  'id',
   'name',
   'contactName',
   'contactNumber',
