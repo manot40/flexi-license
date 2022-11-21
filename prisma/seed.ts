@@ -36,7 +36,7 @@ async function seed() {
 
   await prisma.license.create({
     data: {
-      company: company.id,
+      companyId: company.id,
       maxUser: 69,
       subscriptionStart: day.toDate(),
       subscriptionEnd: day.add(1, 'year').toDate(),
