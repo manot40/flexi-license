@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  db:
+    image: mariadb:10.6
+    container_name: db
+    volumes:
+      - ./db:/var/lib/mysql
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  app:
+    container_name: flexi-license
+    build:
+      context: ..
+      args:
+        DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${MYSQL_DATABASE}
+        NEXT_JWT_SECRET: ${NEXT_JWT_SECRET}
+        NEXT_JWT_EXPIRATION: 1d
+    ports:
+      - ${PORT}:3000/tcp
+    volumes:
+      - ./public:/app/public
+    depends_on:
+      - db
+    restart: 'unless-stopped'

@@ -71,14 +71,13 @@ export default function Navigation() {
             {menu
               .filter(({ roles }) => (roles ? checkRole(roles as any) : true))
               .map((link) => (
-                <Link key={link.label} href={`/dashboard/${link.label}`}>
-                  <NavbarLink
-                    {...link}
-                    isWide={isWide}
-                    onClick={() => setOpen(!open)}
-                    active={!link.label ? r.pathname === '/dashboard' : r.pathname.includes(link.label)}
-                  />
-                </Link>
+                <NavbarLink
+                  {...link}
+                  isWide={isWide}
+                  key={link.label}
+                  onClick={() => setOpen(!open)}
+                  active={!link.label ? r.pathname === '/dashboard' : r.pathname.includes(link.label)}
+                />
               ))}
           </Stack>
         </Navbar.Section>
@@ -111,7 +110,7 @@ export default function Navigation() {
 
 const useStyles = createStyles((theme) => ({
   link: {
-    width: 'auto',
+    width: '100%',
     height: 50,
     borderRadius: theme.radius.md,
     display: 'flex',
@@ -158,14 +157,16 @@ function NavbarLink({ icon: Icon, label: _label, active, onClick, isWide }: Navb
 
   return (
     <Tooltip label={label} disabled={!isWide} position="right" transition="pop-top-left" transitionDuration={100}>
-      <UnstyledButton mb={8} onClick={onClick} className={cx(classes.link, { [classes.active]: active })}>
-        <Icon stroke={1.5} />
-        {isWide ? null : (
-          <Text ml={8} component="span">
-            {label}
-          </Text>
-        )}
-      </UnstyledButton>
+      <Link style={{ textDecoration: 'none' }} href={`/dashboard/${_label}`}>
+        <UnstyledButton mb={8} onClick={onClick} className={cx(classes.link, { [classes.active]: active })}>
+          <Icon stroke={1.5} />
+          {isWide ? null : (
+            <Text ml={8} component="span">
+              {label}
+            </Text>
+          )}
+        </UnstyledButton>
+      </Link>
     </Tooltip>
   );
 }
