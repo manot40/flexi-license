@@ -34,7 +34,7 @@ model Company {
   contactName   String
   contactNumber String
 
-  License License[]
+  licenses License[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,12 +48,12 @@ model Company {
 
 model License {
   id                String   @id @default(cuid())
-  company           String
+  companyId         String
   maxUser           Int      @default(1)
   subscriptionStart DateTime @default(now())
   subscriptionEnd   DateTime
 
-  Company Company @relation(fields: [company], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -22,3 +22,5 @@ declare type User = Omit<import('@prisma/client').User, 'password'>;
 declare type License = import('@prisma/client').License;
 
 declare type Company = import('@prisma/client').Company;
+
+declare type LicenseWithCompany = License & { company: Company };

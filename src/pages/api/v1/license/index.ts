@@ -4,14 +4,16 @@ import validator, { createCompany } from 'libs/validator';
 import QueryHelper, { pagination } from 'libs/queryHelper';
 
 export const keys = [
-  'name',
-  'contactName',
-  'contactNumber',
+  'id',
+  'companyId',
+  'maxUser',
+  'subscriptionStart',
+  'subscriptionEnd',
   'updatedAt',
   'createdAt',
   'updatedBy',
   'createdBy',
-] as (keyof Company)[];
+] as (keyof License)[];
 
 export default requireAuth(
   async (req, res) => {
@@ -29,15 +31,18 @@ export default requireAuth(
           const qh = new QueryHelper(req.query, keys);
 
           const where = qh.getWhere();
-          const count = await db.company.count({ where });
+          const count = await db.license.count({ where });
           const { take, skip, ...paginate } = pagination(req.query, count);
 
-          const result = await db.company.findMany({
+          const result = await db.license.findMany({
             take,
             skip,
             where,
-            select: qh.getSelect(),
+            //select: qh.getSelect(),
             orderBy: qh.getOrderBy(),
+            include: {
+              company: { select: { id: true, name: true } },
+            },
           });
 
           return res.status(200).json({
@@ -59,7 +64,7 @@ export default requireAuth(
           const errMsg = await validator(createCompany, req.body);
           if (errMsg) return res.status(400).json({ success: false, message: errMsg });
 
-          const result = await db.company.create({
+          const result = await db.license.create({
             data: {
               ...req.body,
               createdBy: req.user.username,
