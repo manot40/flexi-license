@@ -6,7 +6,7 @@ import { useDebouncedState } from '@mantine/hooks';
 import UserModal from './UserModal';
 import { AutoTable } from 'components/reusable';
 import { showNotification } from '@mantine/notifications';
-import { Box, Button, Center, Chip, Flex, Input, Pagination, Select, Space } from '@mantine/core';
+import { Box, Button, Center, Chip, Flex, Group, Input, Pagination, Select, Space } from '@mantine/core';
 
 export default function UserTable() {
   const [page, setPage] = useState(1);
@@ -29,21 +29,23 @@ export default function UserTable() {
 
   return (
     <Box>
-      <Flex gap={12} justify="space-between">
-        <Flex gap={12}>
-          <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
+      <Flex gap={12} direction={{ base: 'column-reverse', xs: 'initial' }} justify="space-between">
+        <Group spacing={8} position="left" noWrap>
+          <Input
+            placeholder="Search by name"
+            w={{ base: '100%', sm: 'auto' }}
+            onChange={({ target }) => setSearch(target.value)}
+          />
           <Select
-            sx={{ width: '128px' }}
             defaultValue=""
             onChange={setRole}
+            sx={{ width: '10rem' }}
             data={[{ value: '', label: 'All Role' }, ...roleSelectData]}
           />
-        </Flex>
-        <Box>
-          <UserModal onSubmitted={() => mutate()}>
-            <Button>Create User</Button>
-          </UserModal>
-        </Box>
+        </Group>
+        <UserModal onSubmitted={() => mutate()}>
+          <Button w={{ base: '100%', sm: 'auto' }}>Create User</Button>
+        </UserModal>
       </Flex>
       <Space h={16} />
       <AutoTable highlightOnHover columns={columns(updateUser)} data={data?.result} isLoading={isValidating} />

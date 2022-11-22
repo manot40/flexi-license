@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from 'components/AuthContext';
 
-import { UserTable } from 'components/user';
+import { ProductTable } from 'components/product';
 import { Box, Space, Title } from '@mantine/core';
 
-export default function Users() {
+export default function ProductIndex() {
   const { checkRole } = useAuth();
   const { replace } = useRouter();
 
@@ -19,9 +19,9 @@ export default function Users() {
 
   return (
     <Box>
-      <Title order={1}>Manage Users</Title>
+      <Title order={1}>Manage Product</Title>
       <Space h={32} />
-      <UserTable />
+      <ProductTable />
     </Box>
   );
 }

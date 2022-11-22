@@ -12,16 +12,16 @@ type LicenseModalProps = {
   opened: boolean;
   onClose: () => void;
   value?: Partial<License> | null;
-  onSubmit?: (data: License) => void;
+  onSubmitted?: (data: License) => void;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-export default function LicenseModal({ opened, value, onClose, onSubmit: _onSubmit }: LicenseModalProps) {
+export default function LicenseModal({ opened, value, onClose, onSubmitted }: LicenseModalProps) {
   const [loading, setLoading] = useState(false);
   const [isSubscribe, setIsSubscribe] = useState(false);
   const [subsRange, setSubsRange] = useState<DateRangePickerValue>([null, null]);
 
   const { setValues, reset, onSubmit, getInputProps } = useForm({
-    initialValues: value as License,
+    initialValues: (value as License) || defaultLicenseData,
     validate: {
       productCode: (value) => !value && 'Product is required',
       companyId: (val) => !val && 'Company ID is required',
@@ -67,14 +67,14 @@ export default function LicenseModal({ opened, value, onClose, onSubmit: _onSubm
       } else {
         body.type = 'ONPREMISE';
       }
-      console.log(body);
+
       const res = await fetcher<Res<License>>(`/api/v1/license/${value?.id || ''}`, {
         method: isEdit ? 'PUT' : 'POST',
         body,
       });
       if (res.success) {
         showNotification({ color: 'green', title: 'Success', message: `License ${t}d` });
-        _onSubmit?.(res.result);
+        onSubmitted?.(res.result);
         onClose?.();
         reset();
       }
@@ -85,7 +85,10 @@ export default function LicenseModal({ opened, value, onClose, onSubmit: _onSubm
   };
 
   return (
-    <Modal opened={opened} onClose={() => onClose?.()} title={isEdit ? `Edit license data` : 'Create New License'}>
+    <Modal
+      opened={opened}
+      onClose={() => (reset(), onClose?.())}
+      title={isEdit ? `Edit license data` : 'Create New License'}>
       <form onSubmit={onSubmit(handleSubmit)}>
         <Stack>
           <ProductSelect
@@ -123,3 +126,10 @@ export default function LicenseModal({ opened, value, onClose, onSubmit: _onSubm
     </Modal>
   );
 }
+
+export const defaultLicenseData = {
+  id: '',
+  companyId: '',
+  productCode: '',
+  maxUser: 1,
+} as Partial<License>;

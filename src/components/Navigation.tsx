@@ -12,6 +12,7 @@ import {
   IconHome2,
   IconUsers,
   IconLogout,
+  IconBoxSeam,
   IconAffiliate,
   IconAddressBook,
   IconFileCertificate,
@@ -71,13 +72,14 @@ export default function Navigation() {
             {menu
               .filter(({ roles }) => (roles ? checkRole(roles as any) : true))
               .map((link) => (
-                <NavbarLink
-                  {...link}
-                  isWide={isWide}
-                  key={link.label}
-                  onClick={() => setOpen(!open)}
-                  active={!link.label ? r.pathname === '/dashboard' : r.pathname.includes(link.label)}
-                />
+                <Link key={link.label} style={{ textDecoration: 'none' }} href={`/dashboard/${link.label}`}>
+                  <NavbarLink
+                    {...link}
+                    isWide={isWide}
+                    onClick={() => setOpen(!open)}
+                    active={!link.label ? r.pathname === '/dashboard' : r.pathname.includes(link.label)}
+                  />
+                </Link>
               ))}
           </Stack>
         </Navbar.Section>
@@ -157,23 +159,22 @@ function NavbarLink({ icon: Icon, label: _label, active, onClick, isWide }: Navb
 
   return (
     <Tooltip label={label} disabled={!isWide} position="right" transition="pop-top-left" transitionDuration={100}>
-      <Link style={{ textDecoration: 'none' }} href={`/dashboard/${_label}`}>
-        <UnstyledButton mb={8} onClick={onClick} className={cx(classes.link, { [classes.active]: active })}>
-          <Icon stroke={1.5} />
-          {isWide ? null : (
-            <Text ml={8} component="span">
-              {label}
-            </Text>
-          )}
-        </UnstyledButton>
-      </Link>
+      <UnstyledButton mb={8} onClick={onClick} className={cx(classes.link, { [classes.active]: active })}>
+        <Icon stroke={1.5} />
+        {isWide ? null : (
+          <Text ml={8} component="span">
+            {label}
+          </Text>
+        )}
+      </UnstyledButton>
     </Tooltip>
   );
 }
 
 const menu = [
   { icon: IconHome2, label: '' },
-  { icon: IconAddressBook, label: 'company', roles: ['ADMIN', 'SALES'] },
+  { icon: IconBoxSeam, label: 'product', roles: ['ADMIN'] },
+  { icon: IconAddressBook, label: 'company' },
   { icon: IconFileCertificate, label: 'license', roles: ['ADMIN', 'SUPPORT'] },
   { icon: IconUsers, label: 'users', roles: ['ADMIN'] },
 ];

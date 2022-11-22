@@ -2,12 +2,9 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from 'components/AuthContext';
 
-import { UserTable } from 'components/user';
-import { Box, Space, Title } from '@mantine/core';
-
-export default function Users() {
+export default function ProductDetail() {
   const { checkRole } = useAuth();
-  const { replace } = useRouter();
+  const { replace, query } = useRouter();
 
   const isAdmin = checkRole('ADMIN');
 
@@ -17,11 +14,5 @@ export default function Users() {
 
   if (!isAdmin) return null;
 
-  return (
-    <Box>
-      <Title order={1}>Manage Users</Title>
-      <Space h={32} />
-      <UserTable />
-    </Box>
-  );
+  return query.code;
 }

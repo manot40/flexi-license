@@ -11,6 +11,9 @@ export default async function validator(schema: AnySchema, data: unknown) {
     return null;
   } catch (e: any) {
     if (e instanceof ValidationError) return e.message as string;
-    else return 'Server cannot handling your request, try again later';
+    else {
+      console.error(e);
+      return 'Server cannot handling your request, try again later';
+    }
   }
 }

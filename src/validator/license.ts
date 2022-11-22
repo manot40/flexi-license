@@ -9,11 +9,13 @@ export const createUpdateLicense = object({
   companyId: string().required('Company id is required'),
   subscriptionStart: date().min(
     dayjs().startOf('day').toDate(),
-    'Subscription start must be greater than or equal today'
+    'Subscription start must be greater than or equal current date'
   ),
   subscriptionEnd: date()
     .min(dayjs().add(1, 'day').toDate(), 'Subscription end must be greater than tomorrow')
-    .when('subscriptionStart', (subscriptionStart: Date, schema: any) =>
-      schema.min(subscriptionStart, 'Subscription end must be greater than subscription start')
+    .when('subscriptionStart', (subscriptionStart: Date | undefined, schema: any) =>
+      subscriptionStart
+        ? schema.min(subscriptionStart, 'Subscription end must be greater than subscription start')
+        : schema
     ),
 });

@@ -52,8 +52,16 @@ export default class QueryHelper {
       .filter((k) => !/(order|fields|page)/i.test(k))
       .forEach((key) => {
         if (!this.omit.includes(key)) {
-          const val = (this.query[key] as string)?.split(':');
-          if (val[0]) where[key] = { [val[1] || 'contains']: val[0] };
+          let value,
+            criteria = (this.query[key] as string)?.split(':');
+
+          try {
+            value = JSON.parse(criteria[0]);
+          } catch {
+            value = criteria[0];
+          }
+
+          if (typeof value != 'undefined' && value !== '') where[key] = { [criteria[1] || 'contains']: value };
         }
       });
 

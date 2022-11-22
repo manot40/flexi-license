@@ -3,54 +3,50 @@ import fetcher from 'libs/fetcher';
 import useSWR from 'swr';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from 'components/AuthContext';
 import { useViewportSize } from '@mantine/hooks';
 
-import LicenseModal from './LicenseModal';
 import { AutoTable, CompanySelect } from 'components/reusable';
-import { Box, Button, Center, Flex, Pagination, Space } from '@mantine/core';
-
-import { IconEdit } from '@tabler/icons';
+import { Box, Center, Flex, Pagination, Space, Group, Select } from '@mantine/core';
 
 export default function LicenseTable() {
   const { push } = useRouter();
-  const { checkRole } = useAuth();
   const { width } = useViewportSize();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [license, setLicense] = useState<Partial<License>>();
+  const [type, setType] = useState('' as License['type']);
 
-  const isSales = checkRole('SALES');
-  const { data, isValidating, mutate } = useSWR<Res<User[]>>(
-    `/api/v1/license?page=${page}&companyId=${search || ''}`,
+  const { data, isValidating } = useSWR<Res<User[]>>(
+    `/api/v1/license?page=${page}&companyId=${search || ''}&type=${type}:equals`,
     fetcher
   );
 
-  const handleDelete = async (id: string) => console.log(id);
-
   return (
     <>
-      {isSales && (
-        <LicenseModal
-          value={license}
-          opened={!!license}
-          onSubmit={() => mutate()}
-          onClose={setLicense as () => undefined}
-        />
-      )}
       <Box>
-        <Flex gap={12} justify="space-between">
-          <CompanySelect allowDeselect placeholder="Search by company" onChange={setSearch} />
-          {isSales && <Button onClick={() => setLicense(defaultData)}>New License</Button>}
+        <Flex gap={12} direction={{ base: 'column', xs: 'initial' }} justify="space-between">
+          <Group spacing={8} position="left" noWrap>
+            <CompanySelect
+              allowDeselect
+              onChange={setSearch}
+              placeholder="Search by company"
+              w={{ base: '100%', sm: 'auto' }}
+            />
+            <Select
+              defaultValue=""
+              sx={{ width: '10rem' }}
+              onChange={(v) => setType(v as any)}
+              data={[{ value: '', label: 'All Type' }, ...typeSelectData]}
+            />
+          </Group>
         </Flex>
         <Space h={16} />
         <AutoTable
           highlightOnHover
+          columns={columns}
           data={data?.result}
           useScroll={width <= 768}
           isLoading={isValidating}
-          columns={columns(setLicense, handleDelete)}
           onClick={(row) => push(`/dashboard/license/${row.id}`)}
         />
         <Space h={16} />
@@ -64,14 +60,12 @@ export default function LicenseTable() {
   );
 }
 
-const defaultData = {
-  id: '',
-  companyId: '',
-  productCode: '',
-  maxUser: 1,
-} as Partial<License>;
+const typeSelectData = [
+  { value: 'ONPREMISE', label: 'On Premise' },
+  { value: 'CLOUD', label: 'Cloud' },
+];
 
-const columns = (mutator: any, deleteHandler: any) => [
+const columns = [
   {
     key: 'key',
     title: 'License Key',
@@ -123,16 +117,5 @@ const columns = (mutator: any, deleteHandler: any) => [
     key: 'updatedBy',
     title: 'Updated By',
     width: 120,
-  },
-  {
-    key: 'id',
-    title: 'Action',
-    render: (cell: string, row: Company) => (
-      <Flex onClick={(e) => e.stopPropagation()} gap={8}>
-        <Button compact variant="light" onClick={() => mutator(row)}>
-          <IconEdit size={16} />
-        </Button>
-      </Flex>
-    ),
   },
 ];

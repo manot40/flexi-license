@@ -1,45 +1,88 @@
 import fetcher from 'libs/fetcher';
 
 import useSWR from 'swr';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from 'components/AuthContext';
-import { useDebouncedState, useViewportSize } from '@mantine/hooks';
+import { useDebouncedState, useViewportSize, useDisclosure } from '@mantine/hooks';
 
-import CompanyModal from './CompanyModal';
+import { LicenseModal } from 'components/license';
+import CompanyModal, { defaultCompanyData } from './CompanyModal';
+
 import { AutoTable, ConfirmPop } from 'components/reusable';
-import { Box, Button, Center, Flex, Input, Pagination, Space } from '@mantine/core';
+import { Box, Button, Center, Flex, Input, Pagination, Space, Group, ActionIcon, Tooltip } from '@mantine/core';
 
-import { IconTrash, IconEdit } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCertificate2 } from '@tabler/icons';
 
-export default function CompanyTable() {
+type CompanyTableProps = {
+  checkRole: (role: User['role'] | User['role'][]) => boolean;
+};
+
+export default function CompanyTable({ checkRole }: CompanyTableProps) {
   const { push } = useRouter();
-  const { checkRole } = useAuth();
   const { width } = useViewportSize();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useDebouncedState('', 300);
   const [company, setCompany] = useState<Partial<Company>>();
 
-  const isSales = checkRole('SALES');
+  const [licenseOpen, loHandler] = useDisclosure(false);
+
   const { data, isValidating, mutate } = useSWR<Res<User[]>>(`/api/v1/company?page=${page}&name=${search}`, fetcher);
 
   const handleDelete = async (id: string) => console.log(id);
 
+  const isSales = checkRole('SALES');
+
+  const renderedColumn = useMemo(() => {
+    const cols: any = [...columns];
+
+    if (isSales)
+      cols.push({
+        key: 'id',
+        title: 'Action',
+        render: (cell: string, row: Company) => (
+          <Group spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
+            <ActionIcon color="blue" onClick={() => setCompany(row)}>
+              <IconEdit size={16} stroke={1.5} />
+            </ActionIcon>
+            <ConfirmPop color="red" onConfirm={() => handleDelete(cell)}>
+              <ActionIcon color="red">
+                <IconTrash size={16} />
+              </ActionIcon>
+            </ConfirmPop>
+          </Group>
+        ),
+      });
+
+    return cols;
+  }, [isSales]);
+
   return (
     <>
       {isSales && (
-        <CompanyModal
-          opened={!!company}
-          onClose={setCompany as () => undefined}
-          value={company}
-          onSubmit={() => mutate()}
-        />
+        <>
+          <CompanyModal
+            opened={!!company}
+            onClose={setCompany as () => undefined}
+            value={company}
+            onSubmit={() => mutate()}
+          />
+          <LicenseModal opened={licenseOpen} onClose={loHandler.close} />
+        </>
       )}
       <Box>
-        <Flex gap={12} justify="space-between">
+        <Flex gap={12} direction={{ base: 'column-reverse', xs: 'initial' }} justify="space-between">
           <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
-          {isSales && <Button onClick={() => setCompany(defaultData)}>New Company</Button>}
+          {isSales && (
+            <Group spacing={6} position="right">
+              <Tooltip label="New License">
+                <Button variant="subtle" size="sm" onClick={loHandler.open}>
+                  <IconCertificate2 />
+                </Button>
+              </Tooltip>
+              <Button onClick={() => setCompany(defaultCompanyData)}>New Company</Button>
+            </Group>
+          )}
         </Flex>
         <Space h={16} />
         <AutoTable
@@ -47,7 +90,7 @@ export default function CompanyTable() {
           data={data?.result}
           useScroll={width <= 768}
           isLoading={isValidating}
-          columns={columns(setCompany, handleDelete)}
+          columns={renderedColumn}
           onClick={(row) => push(`/dashboard/company/${row.id}`)}
         />
         <Space h={16} />
@@ -61,14 +104,7 @@ export default function CompanyTable() {
   );
 }
 
-const defaultData = {
-  id: '',
-  name: '',
-  contactName: '',
-  contactNumber: '',
-} as Partial<Company>;
-
-const columns = (mutator: any, deleteHandler: any) => [
+const columns = [
   {
     key: 'name',
     title: 'Company Name',
@@ -93,21 +129,5 @@ const columns = (mutator: any, deleteHandler: any) => [
     key: 'updatedBy',
     title: 'Updated By',
     width: 120,
-  },
-  {
-    key: 'id',
-    title: 'Action',
-    render: (cell: string, row: Company) => (
-      <Flex onClick={(e) => e.stopPropagation()} gap={8}>
-        <Button compact variant="light" onClick={() => mutator(row)}>
-          <IconEdit size={16} />
-        </Button>
-        <ConfirmPop color="red" onConfirm={() => deleteHandler(cell)}>
-          <Button compact color="red">
-            <IconTrash size={16} />
-          </Button>
-        </ConfirmPop>
-      </Flex>
-    ),
   },
 ];

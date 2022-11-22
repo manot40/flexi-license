@@ -6,5 +6,5 @@ export const createUpdateProduct = object({
     .required('Product code is required'),
   name: string().required('Product name is required'),
   isActive: boolean().nullable(),
-  description: string().length(10, 'Product description length must be greater than or equal to 10'),
+  description: string().min(10, 'Product description length must be greater than or equal to 10'),
 });

@@ -10,14 +10,14 @@ type CompanyModalProps = {
   opened: boolean;
   onClose: () => void;
   value?: Partial<Company> | null;
-  onSubmit?: (data: Company) => void;
+  onSubmitted?: (data: Company) => void;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-export default function CompanyModal({ opened, value, onClose, onSubmit }: CompanyModalProps) {
+export default function CompanyModal({ opened, value, onClose, onSubmitted }: CompanyModalProps) {
   const [loading, setLoading] = useState(false);
 
-  const form = useForm({
-    initialValues: value as Company,
+  const { setValues, reset, getInputProps, onSubmit } = useForm({
+    initialValues: (value as Company) || defaultCompanyData,
     validate: {
       name: (value) => (value ? null : 'Name is required'),
       contactName: (value) => (value ? null : 'Contact name is required'),
@@ -28,16 +28,16 @@ export default function CompanyModal({ opened, value, onClose, onSubmit }: Compa
   useEffect(() => {
     if (value) {
       const { id, updatedAt, createdAt, createdBy, updatedBy, ...data } = value;
-      form.setValues(data);
+      setValues(data);
     } else {
-      form.reset();
+      reset();
     }
     // eslint-disable-next-line
   }, [value]);
 
   const isEdit = !!value?.id;
 
-  const handleSubmit = async (body: typeof form.values) => {
+  const handleSubmit = async (body: Company) => {
     setLoading(true);
     const t = isEdit ? 'update' : 'create';
     try {
@@ -47,9 +47,9 @@ export default function CompanyModal({ opened, value, onClose, onSubmit }: Compa
       });
       if (res.success) {
         showNotification({ color: 'green', title: 'Success', message: `Company ${body.name} ${t}d` });
-        onSubmit?.(res.result);
+        onSubmitted?.(res.result);
         onClose?.();
-        form.reset();
+        reset();
       }
     } catch (err: any) {
       showNotification({ color: 'red', title: `Failed to ${t} company`, message: err.message });
@@ -60,18 +60,13 @@ export default function CompanyModal({ opened, value, onClose, onSubmit }: Compa
   return (
     <Modal
       opened={opened}
-      onClose={() => onClose?.()}
+      onClose={() => (reset(), onClose?.())}
       title={isEdit ? `Edit ${value.name} data` : 'Create New Company'}>
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form onSubmit={onSubmit(handleSubmit)}>
         <Stack>
-          <TextInput w="100%" label="Name" placeholder="Acme. Inc." {...form.getInputProps('name')} />
-          <TextInput w="100%" label="Contact Person" placeholder="John Doe" {...form.getInputProps('contactName')} />
-          <TextInput
-            w="100%"
-            label="Contact Number"
-            placeholder="0123456789"
-            {...form.getInputProps('contactNumber')}
-          />
+          <TextInput w="100%" label="Name" placeholder="Acme. Inc." {...getInputProps('name')} />
+          <TextInput w="100%" label="Contact Person" placeholder="John Doe" {...getInputProps('contactName')} />
+          <TextInput w="100%" label="Contact Number" placeholder="0123456789" {...getInputProps('contactNumber')} />
           <Space />
           <Button loading={loading} type="submit">
             Submit
@@ -81,3 +76,10 @@ export default function CompanyModal({ opened, value, onClose, onSubmit }: Compa
     </Modal>
   );
 }
+
+export const defaultCompanyData = {
+  id: '',
+  name: '',
+  contactName: '',
+  contactNumber: '',
+} as Partial<Company>;
