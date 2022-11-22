@@ -41,7 +41,7 @@ COPY --from=builder /app/package-lock.json package-lock.json
 COPY --from=builder /app/.next .next
 COPY --from=builder /app/public public
 
-RUN npm ci --omit=dev
+RUN npm ci
 
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
