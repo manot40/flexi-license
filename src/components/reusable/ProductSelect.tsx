@@ -4,40 +4,40 @@ import useSWR from 'swr';
 import fetcher from 'libs/fetcher';
 import { Select } from '@mantine/core';
 
-type CompanySelect = {
-  fields?: (keyof Company)[];
-  valueKey?: keyof Company;
-  labelKey?: keyof Company;
-  onChange?: (val: Company['id'], company: Company) => void;
+type ProductSelect = {
+  fields?: (keyof Product)[];
+  valueKey?: keyof Product;
+  labelKey?: keyof Product;
+  onChange?: (val: Product['id'], product: Product) => void;
 } & Omit<React.ComponentProps<typeof Select>, 'onChange' | 'data' | 'searchValue' | 'onSearchChange'>;
 
-export default function CompanySelect({
+export default function ProductSelect({
   onChange,
   fields = [],
+  searchable = true,
   valueKey = 'id',
   labelKey = 'name',
-  searchable = true,
-  placeholder = 'Select company',
+  placeholder = 'Select product',
   ...restProps
-}: CompanySelect) {
+}: ProductSelect) {
   const [search, setSearch] = useState('');
-  const { data } = useSWR<Res<Company[]>>(
-    `/api/v1/company?name=${search}&fields=${fields.join(',')}&order=name:asc`,
+  const { data } = useSWR<Res<Product[]>>(
+    `/api/v1/product?name=${search}&fields=${fields.join(',')}&order=name:asc`,
     fetcher
   );
 
-  const companies = useMemo(() => {
+  const product = useMemo(() => {
     if (!data) return [];
-    return data.result.map((company) => ({
-      label: `${company[labelKey]}`,
-      value: `${company[valueKey]}`,
+    return data.result.map((product) => ({
+      label: `${product[labelKey]} (${product.code})`,
+      value: `${product[valueKey]}`,
     }));
-  }, [data, labelKey, valueKey]);
+  }, [data, valueKey, labelKey]);
 
   return (
     <Select
       {...restProps}
-      data={companies}
+      data={product}
       searchValue={search}
       searchable={searchable}
       placeholder={placeholder}

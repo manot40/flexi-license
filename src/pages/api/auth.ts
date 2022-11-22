@@ -5,9 +5,9 @@ import bcrypt from 'bcryptjs';
 import { sign, Expiry } from 'services/jwt';
 import { setCookie, deleteCookie } from 'cookies-next';
 
-import validator from 'libs/validator';
+import validator from 'validator';
 import { getAuthUser } from 'libs/requireAuth';
-import { createUser } from 'libs/validator/user';
+import { createUser } from 'validator/user';
 
 export default async function handler(req: NextReq, res: NextRes) {
   const user = await getAuthUser(req);

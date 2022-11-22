@@ -5,8 +5,8 @@ import { useDebouncedState } from '@mantine/hooks';
 
 import UserModal from './UserModal';
 import { AutoTable } from 'components/reusable';
-import { Box, Button, Center, Chip, Flex, Input, Pagination, Select, Space } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
+import { Box, Button, Center, Chip, Flex, Input, Pagination, Select, Space } from '@mantine/core';
 
 export default function UserTable() {
   const [page, setPage] = useState(1);
@@ -90,5 +90,11 @@ const columns = (mutator: (id: string, body: any) => void) => [
         {cell ? 'Active' : 'Inactive'}
       </Chip>
     ),
+  },
+  {
+    key: 'id',
+    title: 'Action',
+    width: 200,
+    render: (cell: string) => <Button variant="light">Change Pass</Button>,
   },
 ];

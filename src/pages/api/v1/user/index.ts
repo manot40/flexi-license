@@ -1,41 +1,39 @@
-import type { NextApiRequest as NextReq, NextApiResponse as NextRes } from 'next';
+import bcrypt from 'bcryptjs';
 
 import db from 'libs/db';
-import bcrypt from 'bcryptjs';
-import validator from 'libs/validator';
+import validator from 'validator';
 import requireAuth from 'libs/requireAuth';
-import { authenticateUser } from 'libs/validator/user';
+import errorHandler from 'libs/errorHandler';
+import { authenticateUser } from 'validator/user';
 import QueryHelper, { pagination } from 'libs/queryHelper';
-
-export const keys = ['id', 'username', 'role', 'isActive', 'updatedAt', 'createdAt'] as (keyof User)[];
 
 export default requireAuth(
   async (req, res) => {
-    switch (req.method) {
-      case 'GET': {
-        const qh = new QueryHelper(req.query, keys);
+    try {
+      switch (req.method) {
+        case 'GET': {
+          const qh = new QueryHelper(req.query, ['password']);
 
-        const where = qh.getWhere();
-        const count = await db.user.count({ where });
-        const { take, skip, ...paginate } = pagination(req.query, count);
+          const where = qh.getWhere();
+          const count = await db.user.count({ where });
+          const { take, skip, ...paginate } = pagination(req.query, count);
 
-        const result = await db.user.findMany({
-          take,
-          skip,
-          where,
-          select: qh.getSelect({ password: false }),
-          orderBy: qh.getOrderBy(),
-        });
+          const result = await db.user.findMany({
+            take,
+            skip,
+            where,
+            select: qh.getSelect(),
+            orderBy: qh.getOrderBy(),
+          });
 
-        return res.status(200).json({
-          success: true,
-          paginate,
-          result,
-        });
-      }
+          return res.status(200).json({
+            success: true,
+            paginate,
+            result,
+          });
+        }
 
-      case 'POST': {
-        try {
+        case 'POST': {
           const isInvalid = await validator(authenticateUser, req.body);
 
           if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
@@ -55,21 +53,20 @@ export default requireAuth(
             message: 'User created',
             result,
           });
-        } catch (err: any) {
-          console.error(err.message);
-          const message = /unique/i.test(err.message) ? 'User Already Exist' : 'Internal server error';
-          return res.status(500).json({
-            success: false,
-            message,
-          });
         }
-      }
 
-      default:
-        return res.status(405).json({
-          success: false,
-          message: 'Method not allowed',
-        });
+        default:
+          return res.status(405).json({
+            success: false,
+            message: 'Method not allowed',
+          });
+      }
+    } catch (err) {
+      const { code, message } = errorHandler(err);
+      return res.status(code).json({
+        success: false,
+        message,
+      });
     }
   },
   {

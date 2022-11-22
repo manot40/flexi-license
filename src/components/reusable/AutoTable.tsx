@@ -43,9 +43,10 @@ export default function AutoTable({
 
   const tableData = (data || Array(10).fill('')).map((row, i) => (
     <tr key={row[id] || i} onClick={() => onClick?.(row)} style={{ cursor: onClick && 'pointer' }}>
-      {columns.map((column, i) => (
-        <td key={i}>{row ? column.render?.(row[column.key], row) || row[column.key] : <Skeleton h={32} />}</td>
-      ))}
+      {columns.map((column, i) => {
+        const cell = getNestedValue(row, column.key);
+        return <td key={i}>{row ? column.render?.(cell, row) || cell : <Skeleton h={32} />}</td>;
+      })}
     </tr>
   ));
 
@@ -75,4 +76,13 @@ export default function AutoTable({
       )}
     </Scroll>
   );
+}
+
+function getNestedValue(obj: any, path: string) {
+  try {
+    if (path.includes('.')) return path.split('.').reduce((acc, key) => acc && acc[key], obj);
+    else return obj[path];
+  } catch (e) {
+    return undefined;
+  }
 }

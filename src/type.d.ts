@@ -23,4 +23,6 @@ declare type License = import('@prisma/client').License;
 
 declare type Company = import('@prisma/client').Company;
 
+declare type Product = import('@prisma/client').Product;
+
 declare type LicenseWithCompany = License & { company: Company };

@@ -4,13 +4,13 @@ import useSWR from 'swr';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from 'components/AuthContext';
-import { useDebouncedState, useViewportSize } from '@mantine/hooks';
+import { useViewportSize } from '@mantine/hooks';
 
 import LicenseModal from './LicenseModal';
-import { AutoTable, ConfirmPop } from 'components/reusable';
-import { Box, Button, Center, Flex, Input, Pagination, Space } from '@mantine/core';
+import { AutoTable, CompanySelect } from 'components/reusable';
+import { Box, Button, Center, Flex, Pagination, Space } from '@mantine/core';
 
-import { IconTrash, IconEdit } from '@tabler/icons';
+import { IconEdit } from '@tabler/icons';
 
 export default function LicenseTable() {
   const { push } = useRouter();
@@ -18,7 +18,7 @@ export default function LicenseTable() {
   const { width } = useViewportSize();
 
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useDebouncedState('', 300);
+  const [search, setSearch] = useState('');
   const [license, setLicense] = useState<Partial<License>>();
 
   const isSales = checkRole('SALES');
@@ -33,15 +33,15 @@ export default function LicenseTable() {
     <>
       {isSales && (
         <LicenseModal
-          opened={!!license}
-          onClose={setLicense as () => undefined}
           value={license}
+          opened={!!license}
           onSubmit={() => mutate()}
+          onClose={setLicense as () => undefined}
         />
       )}
       <Box>
         <Flex gap={12} justify="space-between">
-          <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by company ID" />
+          <CompanySelect allowDeselect placeholder="Search by company" onChange={setSearch} />
           {isSales && <Button onClick={() => setLicense(defaultData)}>New License</Button>}
         </Flex>
         <Space h={16} />
@@ -66,19 +66,32 @@ export default function LicenseTable() {
 
 const defaultData = {
   id: '',
-  name: '',
-  contactName: '',
-  contactNumber: '',
+  companyId: '',
+  productCode: '',
+  maxUser: 1,
 } as Partial<License>;
 
 const columns = (mutator: any, deleteHandler: any) => [
   {
-    key: 'companyId',
-    title: 'Company ID',
+    key: 'key',
+    title: 'License Key',
+  },
+  {
+    key: 'product',
+    title: 'Product',
+    render: (row: Product) => `${row.name} (${row.code})`,
   },
   {
     key: 'maxUser',
     title: 'Max User',
+  },
+  {
+    key: 'type',
+    title: 'Type',
+  },
+  {
+    key: 'company.name',
+    title: 'Company',
   },
   {
     key: 'subscriptionStart',
@@ -88,11 +101,15 @@ const columns = (mutator: any, deleteHandler: any) => [
       Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
   },
   {
-    key: 'subscriptionStart',
+    key: 'subscriptionEnd',
     title: 'Subscription End',
     width: 180,
     render: (cell: string) =>
-      Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
+      cell ? (
+        Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell))
+      ) : (
+        <i>(on-prem)</i>
+      ),
   },
 
   {
@@ -107,20 +124,15 @@ const columns = (mutator: any, deleteHandler: any) => [
     title: 'Updated By',
     width: 120,
   },
-  // {
-  //   key: 'id',
-  //   title: 'Action',
-  //   render: (cell: string, row: Company) => (
-  //     <Flex onClick={(e) => e.stopPropagation()} gap={8}>
-  //       <Button compact variant="light" onClick={() => mutator(row)}>
-  //         <IconEdit size={16} />
-  //       </Button>
-  //       <ConfirmPop color="red" onConfirm={() => deleteHandler(cell)}>
-  //         <Button compact color="red">
-  //           <IconTrash size={16} />
-  //         </Button>
-  //       </ConfirmPop>
-  //     </Flex>
-  //   ),
-  // },
+  {
+    key: 'id',
+    title: 'Action',
+    render: (cell: string, row: Company) => (
+      <Flex onClick={(e) => e.stopPropagation()} gap={8}>
+        <Button compact variant="light" onClick={() => mutator(row)}>
+          <IconEdit size={16} />
+        </Button>
+      </Flex>
+    ),
+  },
 ];

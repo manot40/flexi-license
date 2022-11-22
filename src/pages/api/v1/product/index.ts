@@ -1,29 +1,21 @@
 import db from 'libs/db';
 import requireAuth from 'libs/requireAuth';
 import errorHandler from 'libs/errorHandler';
-import validator, { createUpdateCompany } from 'validator';
+import validator, { createUpdateProduct } from 'validator';
 import QueryHelper, { pagination } from 'libs/queryHelper';
 
 export default requireAuth(
   async (req, res) => {
     try {
-      const allowedRoles = ['ADMIN', 'SALES'];
-
-      if (req.method != 'GET' && !allowedRoles.includes(req.user.role))
-        return res.status(403).json({
-          success: false,
-          message: 'You are not allowed to access this resource',
-        });
-
       switch (req.method) {
         case 'GET': {
           const qh = new QueryHelper(req.query);
 
           const where = qh.getWhere();
-          const count = await db.company.count({ where });
+          const count = await db.product.count({ where });
           const { take, skip, ...paginate } = pagination(req.query, count);
 
-          const result = await db.company.findMany({
+          const result = await db.product.findMany({
             take,
             skip,
             where,
@@ -39,19 +31,23 @@ export default requireAuth(
         }
 
         case 'POST': {
-          const errMsg = await validator(createUpdateCompany, req.body);
-          if (errMsg) return res.status(400).json({ success: false, message: errMsg });
+          const isInvalid = await validator(createUpdateProduct, req.body);
+          if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
 
-          const result = await db.company.create({
+          const result = await db.product.create({
             data: {
-              ...req.body,
+              code: req.body.code,
+              name: req.body.name,
+              description: req.body.description,
+              isActive: req.body.isActive,
               createdBy: req.user.username,
               updatedBy: req.user.username,
             },
           });
 
-          return res.status(201).json({
+          return res.status(200).json({
             success: true,
+            message: 'product created',
             result,
           });
         }
@@ -62,12 +58,15 @@ export default requireAuth(
             message: 'Method not allowed',
           });
       }
-    } catch (err: any) {
+    } catch (err) {
       const { code, message } = errorHandler(err);
-      return res.status(code).json({ success: false, message });
+      return res.status(code).json({
+        success: false,
+        message,
+      });
     }
   },
   {
-    allowRule: [{ method: '^((?!GET).)*$', role: ['ADMIN', 'SALES'] }],
+    allowRule: [{ method: '^((?!GET).)*$', role: ['ADMIN'] }],
   }
 );

@@ -20,47 +20,42 @@ export function pagination(query: Query, total: number) {
 
 export default class QueryHelper {
   private query: Query;
-  private keys: string[];
+  private omit: string[];
 
-  constructor(query: Query, keys: string[]) {
-    this.keys = keys;
+  constructor(query: Query, keysToOmit?: string[]) {
     this.query = query;
+    this.omit = keysToOmit || [];
   }
 
-  public getSelect(override?: { [key: string]: boolean }) {
-    const select: any = override || {};
+  public getSelect() {
+    const select: any = {};
 
-    if (typeof this.query.fields == 'string') {
-      const split = this.query.fields.split(',');
-      const trimmed = split.map((item) => item.trim().replace('-', ''));
-      const filtered = trimmed.filter((key) => this.keys.includes(key));
+    if (typeof this.query.fields != 'string') return undefined;
 
-      if (filtered.length) {
-        const isInverse = split[0].startsWith('-');
-        (isInverse ? this.keys : filtered).forEach((key) => {
-          select[key] = isInverse ? !filtered.includes(key) : true;
-        });
-      }
-    } else if (override) {
-      this.keys.forEach((key) => {
-        select[key] = true;
-      });
-    } else {
-      return undefined;
-    }
+    const split = this.query.fields.split(',');
+    const trimmed = split.map((item) => item.trim().replace('-', ''));
+    const filtered = trimmed.filter((key) => key && !this.omit.includes(key));
 
-    return { ...select, ...override };
+    if (!filtered.length) return undefined;
+
+    filtered.forEach((key) => {
+      select[key] = true;
+    });
+
+    return select;
   }
 
   public getWhere() {
     const where: any = {};
 
-    Object.keys(this.query).forEach((key) => {
-      if (this.keys.includes(key)) {
-        const val = (this.query[key] as string)?.split(':');
-        if (val[0]) where[key] = { [val[1] || 'contains']: val[0] };
-      }
-    });
+    Object.keys(this.query)
+      .filter((k) => !/(order|fields|page)/i.test(k))
+      .forEach((key) => {
+        if (!this.omit.includes(key)) {
+          const val = (this.query[key] as string)?.split(':');
+          if (val[0]) where[key] = { [val[1] || 'contains']: val[0] };
+        }
+      });
 
     return where;
   }
@@ -71,22 +66,22 @@ export default class QueryHelper {
     if (typeof this.query.order !== 'string') return { createdAt: 'desc' };
 
     const split = this.query.order.split(',').map((item) => item.trim().split(':'));
-    const filtered = split.filter((item) => this.keys.includes(item[0]));
+    const filtered = split.filter((item) => !this.omit.includes(item[0]));
 
     if (!filtered.length) return undefined;
 
     filtered.forEach((item) => {
-      orderBy.push({ [item[0]]: item[1] === 'desc' ? 'desc' : 'asc' });
+      orderBy.push({ [item[0] || 'createdAt']: item[1] === 'desc' ? 'desc' : 'asc' });
     });
 
     return orderBy;
   }
 
-  public parseData(body: any) {
+  public parseData(body: any, keys: string[]) {
     const data: any = {};
 
     Object.keys(body).forEach((key) => {
-      if (this.keys.includes(key)) {
+      if (keys.includes(key)) {
         data[key] = body[key];
       }
     });

@@ -24,8 +24,16 @@ model User {
   UpdatedLicense License[] @relation("UpdatedLicense")
   CreatedCompany Company[] @relation("CreatedCompany")
   UpdatedCompany Company[] @relation("UpdatedCompany")
+  CreatedProduct Product[] @relation("CreatedProduct")
+  UpdatedProduct Product[] @relation("UpdatedProduct")
 
   @@map("flexi_users")
+}
+
+enum Role {
+  ADMIN
+  SALES
+  SUPPORT
 }
 
 model Company {
@@ -46,14 +54,37 @@ model Company {
   @@map("flexi_companies")
 }
 
-model License {
-  id                String   @id @default(cuid())
-  companyId         String
-  maxUser           Int      @default(1)
-  subscriptionStart DateTime @default(now())
-  subscriptionEnd   DateTime
+model Product {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  name        String
+  description String?
+  isActive    Boolean @default(true)
 
-  company Company @relation(fields: [companyId], references: [id])
+  licenses License[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+  CreatedBy User     @relation("CreatedProduct", fields: [createdBy], references: [username])
+  UpdatedBy User     @relation("UpdatedProduct", fields: [updatedBy], references: [username])
+
+  @@map("flexi_products")
+}
+
+model License {
+  id                String      @id @default(cuid())
+  key               String      @unique
+  type              LicenseType
+  maxUser           Int         @default(1)
+  subscriptionStart DateTime    @default(now())
+  subscriptionEnd   DateTime?
+
+  productCode String
+  product     Product @relation(fields: [productCode], references: [code])
+  companyId   String
+  company     Company @relation(fields: [companyId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -65,8 +96,7 @@ model License {
   @@map("flexi_licenses")
 }
 
-enum Role {
-  ADMIN
-  SALES
-  SUPPORT
+enum LicenseType {
+  ONPREMISE
+  CLOUD
 }
