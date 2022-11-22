@@ -1,72 +1,54 @@
-import db from 'libs/db';
-import requireAuth from 'libs/requireAuth';
 import errorHandler from 'libs/errorHandler';
-import validator, { createUpdateProduct } from 'validator';
 import QueryHelper, { pagination } from 'libs/queryHelper';
 
-export default requireAuth(
-  async (req, res) => {
-    try {
-      switch (req.method) {
-        case 'GET': {
-          const qh = new QueryHelper(req.query);
+import validator, { createUpdateProduct } from 'validator';
 
-          const where = qh.getWhere();
-          const count = await db.product.count({ where });
-          const { take, skip, ...paginate } = pagination(req.query, count);
+import requireAuth, { type CtxWithUser } from 'middleware/requireAuth';
 
-          const result = await db.product.findMany({
-            take,
-            skip,
-            where,
-            select: qh.getSelect(),
-            orderBy: qh.getOrderBy(),
-          });
+import { product } from 'services';
 
-          return res.status(200).json({
-            success: true,
-            paginate,
-            result,
-          });
-        }
+const handler: CtxWithUser = async (req, res) => {
+  const { body, user } = req;
+  try {
+    switch (req.method) {
+      case 'GET': {
+        const { paginate, result } = await product.getMany(req.query);
 
-        case 'POST': {
-          const isInvalid = await validator(createUpdateProduct, req.body);
-          if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
-
-          const result = await db.product.create({
-            data: {
-              code: req.body.code,
-              name: req.body.name,
-              description: req.body.description,
-              isActive: req.body.isActive,
-              createdBy: req.user.username,
-              updatedBy: req.user.username,
-            },
-          });
-
-          return res.status(200).json({
-            success: true,
-            message: 'product created',
-            result,
-          });
-        }
-
-        default:
-          return res.status(405).json({
-            success: false,
-            message: 'Method not allowed',
-          });
+        return res.status(200).json({
+          success: true,
+          paginate,
+          result,
+        });
       }
-    } catch (err) {
-      const { code, message } = errorHandler(err);
-      return res.status(code).json({
-        success: false,
-        message,
-      });
+
+      case 'POST': {
+        const isInvalid = await validator(createUpdateProduct, req.body);
+        if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
+
+        const result = await product.createOrUpdate({ body, user });
+
+        return res.status(200).json({
+          success: true,
+          message: 'Product created',
+          result,
+        });
+      }
+
+      default:
+        return res.status(405).json({
+          success: false,
+          message: 'Method not allowed',
+        });
     }
-  },
-  {
-    allowRule: [{ method: '^((?!GET).)*$', role: ['ADMIN'] }],
+  } catch (err) {
+    const { code, message } = errorHandler(err);
+    return res.status(code).json({
+      success: false,
+      message,
+    });
   }
-);
+};
+
+export default requireAuth(handler, {
+  rule: [{ method: '^((?!GET).)*$', role: ['ADMIN'] }],
+});

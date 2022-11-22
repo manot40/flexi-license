@@ -62,10 +62,10 @@ export default function CompanyTable({ checkRole }: CompanyTableProps) {
       {isSales && (
         <>
           <CompanyModal
-            opened={!!company}
-            onClose={setCompany as () => undefined}
             value={company}
-            onSubmit={() => mutate()}
+            opened={!!company}
+            onSubmitted={() => mutate()}
+            onClose={setCompany as () => undefined}
           />
           <LicenseModal opened={licenseOpen} onClose={loHandler.close} />
         </>

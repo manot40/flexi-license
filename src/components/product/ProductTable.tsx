@@ -34,10 +34,10 @@ export default function ProductTable() {
     <>
       {isSales && (
         <ProductModal
-          opened={!!product}
-          onClose={setProduct as () => undefined}
           value={product}
-          onSubmit={() => mutate()}
+          opened={!!product}
+          onSubmitted={() => mutate()}
+          onClose={setProduct as () => undefined}
         />
       )}
       <Box>

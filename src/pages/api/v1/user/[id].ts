@@ -1,86 +1,85 @@
 import db from 'libs/db';
-
-import requireAuth from 'libs/requireAuth';
-import QueryHelper from 'libs/queryHelper';
 import errorHandler from 'libs/errorHandler';
+import QueryHelper, { parseBody } from 'libs/queryHelper';
 
-export default requireAuth(
-  async (req, res) => {
-    try {
-      const id = req.query.id;
+import requireAuth, { CtxWithUser } from 'middleware/requireAuth';
 
-      if (typeof id != 'string')
-        return res.status(400).json({
-          succcess: false,
-          message: 'User id not provided',
-        });
+const handler: CtxWithUser = async (req, res) => {
+  try {
+    const id = req.query.id;
 
-      const superadmin =
-        /^((?!GET).)*$/.test(req.method!) && (await db.user.findUnique({ where: { username: 'superadmin' } }));
+    if (typeof id != 'string')
+      return res.status(400).json({
+        succcess: false,
+        message: 'User id not provided',
+      });
 
-      if (superadmin && superadmin.id == id)
-        return res.status(400).json({
-          success: false,
-          message: 'User superadmin cannot be modified',
-        });
+    const superadmin =
+      /^((?!GET).)*$/.test(req.method!) && (await db.user.findUnique({ where: { username: 'superadmin' } }));
 
-      const qh = new QueryHelper(req.query, ['password']);
+    if (superadmin && superadmin.id == id)
+      return res.status(400).json({
+        success: false,
+        message: 'User superadmin cannot be modified',
+      });
 
-      switch (req.method) {
-        case 'GET': {
-          const result = await db.user.findUnique({ where: { id }, select: qh.getSelect() });
+    const qh = new QueryHelper(req.query, ['password']);
 
-          if (!result)
-            return res.status(404).json({
-              success: false,
-              message: 'User not found',
-            });
+    switch (req.method) {
+      case 'GET': {
+        const result = await db.user.findUnique({ where: { id }, select: qh.getSelect() });
 
-          return res.status(200).json({
-            success: true,
-            result,
-          });
-        }
-
-        case 'PUT': {
-          const result = await db.user.update({
-            where: { id },
-            data: {
-              username: req.body.username,
-              role: req.body.role,
-              isActive: req.body.isActive,
-            },
-          });
-
-          return res.status(200).json({
-            success: true,
-            result,
-          });
-        }
-
-        case 'PATCH': {
-          const { password, ...data } = qh.parseData(req.body, ['role', 'isActive'] as (keyof User)[]);
-
-          const result = await db.user.update({ where: { id }, data });
-
-          return res.status(200).json({
-            success: true,
-            result,
-          });
-        }
-
-        default:
-          return res.status(405).json({
+        if (!result)
+          return res.status(404).json({
             success: false,
-            message: 'Method not allowed',
+            message: 'User not found',
           });
+
+        return res.status(200).json({
+          success: true,
+          result,
+        });
       }
-    } catch (err) {
-      const { code, message } = errorHandler(err);
-      return res.status(code).json({ success: false, message });
+
+      case 'PUT': {
+        const result = await db.user.update({
+          where: { id },
+          data: {
+            username: req.body.username,
+            role: req.body.role,
+            isActive: req.body.isActive,
+          },
+        });
+
+        return res.status(200).json({
+          success: true,
+          result,
+        });
+      }
+
+      case 'PATCH': {
+        const { password, ...data } = parseBody(req.body, ['role', 'isActive'] as (keyof User)[]);
+
+        const result = await db.user.update({ where: { id }, data });
+
+        return res.status(200).json({
+          success: true,
+          result,
+        });
+      }
+
+      default:
+        return res.status(405).json({
+          success: false,
+          message: 'Method not allowed',
+        });
     }
-  },
-  {
-    allowRule: [{ method: '.*', role: 'ADMIN' }],
+  } catch (err) {
+    const { code, message } = errorHandler(err);
+    return res.status(code).json({ success: false, message });
   }
-);
+};
+
+export default requireAuth(handler, {
+  rule: [{ method: '.*', role: 'ADMIN' }],
+});

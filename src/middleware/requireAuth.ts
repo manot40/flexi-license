@@ -6,14 +6,16 @@ type NextReqWithUser = NextReq & {
   user: User;
 };
 
-type AllowedRuleOption = {
+type AuthRuleOption = {
   method: string;
   role: User['role'] | User['role'][];
 };
 
-type AuthOptions = {
-  allowRule?: AllowedRuleOption[];
+export type AuthOptions = {
+  rule?: AuthRuleOption[];
 };
+
+export type CtxWithUser = (req: NextReqWithUser, res: NextRes) => Promise<void>;
 
 export async function getAuthUser(req: NextReq) {
   const accessToken = req.cookies.accessToken;
@@ -21,10 +23,7 @@ export async function getAuthUser(req: NextReq) {
   return null;
 }
 
-export default function requireAuth(
-  cb: (req: NextReqWithUser, res: NextRes) => Promise<void>,
-  options = {} as AuthOptions
-) {
+export default function requireAuth(cb: CtxWithUser, options = {} as AuthOptions) {
   return async function handler(req: NextReqWithUser, res: NextRes) {
     const user = await getAuthUser(req);
 
@@ -36,8 +35,8 @@ export default function requireAuth(
 
     req.user = user;
 
-    if (options.allowRule) {
-      const { role } = options.allowRule.find((rule) => new RegExp(rule.method, 'i').test(req.method!)) || {};
+    if (options.rule) {
+      const { role } = options.rule.find((rule) => new RegExp(rule.method, 'i').test(req.method!)) || {};
 
       if (role && !role.includes(user.role))
         return res.status(403).json({

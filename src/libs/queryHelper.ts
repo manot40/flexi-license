@@ -18,6 +18,18 @@ export function pagination(query: Query, total: number) {
   };
 }
 
+export function parseBody(body: any, keys: string[]) {
+  const data: any = {};
+
+  Object.keys(body).forEach((key) => {
+    if (keys.includes(key)) {
+      data[key] = body[key];
+    }
+  });
+
+  return data;
+}
+
 export default class QueryHelper {
   private query: Query;
   private omit: string[];
@@ -83,17 +95,5 @@ export default class QueryHelper {
     });
 
     return orderBy;
-  }
-
-  public parseData(body: any, keys: string[]) {
-    const data: any = {};
-
-    Object.keys(body).forEach((key) => {
-      if (keys.includes(key)) {
-        data[key] = body[key];
-      }
-    });
-
-    return data;
   }
 }

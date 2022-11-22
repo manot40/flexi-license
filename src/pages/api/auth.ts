@@ -1,13 +1,20 @@
 import type { NextApiRequest as NextReq, NextApiResponse as NextRes } from 'next';
-
-import db from 'libs/db';
+// Third party libs
 import bcrypt from 'bcryptjs';
-import { sign, Expiry } from 'services/jwt';
 import { setCookie, deleteCookie } from 'cookies-next';
 
+// Helper Library
+import db from 'libs/db';
+
+// Services
+import { sign, Expiry } from 'services/jwt';
+
+// Validator
 import validator from 'validator';
-import { getAuthUser } from 'libs/requireAuth';
 import { createUser } from 'validator/user';
+
+// Middleware
+import { getAuthUser } from 'middleware/requireAuth';
 
 export default async function handler(req: NextReq, res: NextRes) {
   const user = await getAuthUser(req);

@@ -1,75 +1,76 @@
 import bcrypt from 'bcryptjs';
 
 import db from 'libs/db';
-import validator from 'validator';
-import requireAuth from 'libs/requireAuth';
 import errorHandler from 'libs/errorHandler';
-import { authenticateUser } from 'validator/user';
 import QueryHelper, { pagination } from 'libs/queryHelper';
 
-export default requireAuth(
-  async (req, res) => {
-    try {
-      switch (req.method) {
-        case 'GET': {
-          const qh = new QueryHelper(req.query, ['password']);
+import validator from 'validator';
+import { authenticateUser } from 'validator/user';
 
-          const where = qh.getWhere();
-          const count = await db.user.count({ where });
-          const { take, skip, ...paginate } = pagination(req.query, count);
+import requireAuth, { type CtxWithUser } from 'middleware/requireAuth';
 
-          const result = await db.user.findMany({
-            take,
-            skip,
-            where,
-            select: qh.getSelect(),
-            orderBy: qh.getOrderBy(),
-          });
+const handler: CtxWithUser = async (req, res) => {
+  try {
+    switch (req.method) {
+      case 'GET': {
+        const qh = new QueryHelper(req.query, ['password']);
 
-          return res.status(200).json({
-            success: true,
-            paginate,
-            result,
-          });
-        }
+        const where = qh.getWhere();
+        const count = await db.user.count({ where });
+        const { take, skip, ...paginate } = pagination(req.query, count);
 
-        case 'POST': {
-          const isInvalid = await validator(authenticateUser, req.body);
+        const result = await db.user.findMany({
+          take,
+          skip,
+          where,
+          select: qh.getSelect(),
+          orderBy: qh.getOrderBy(),
+        });
 
-          if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
-
-          const user = await db.user.create({
-            data: {
-              username: req.body.username,
-              password: bcrypt.hashSync(req.body.password, 10),
-              role: req.body.role,
-            },
-          });
-
-          const { createdAt, updatedAt, password, ...result } = user;
-
-          return res.status(200).json({
-            success: true,
-            message: 'User created',
-            result,
-          });
-        }
-
-        default:
-          return res.status(405).json({
-            success: false,
-            message: 'Method not allowed',
-          });
+        return res.status(200).json({
+          success: true,
+          paginate,
+          result,
+        });
       }
-    } catch (err) {
-      const { code, message } = errorHandler(err);
-      return res.status(code).json({
-        success: false,
-        message,
-      });
+
+      case 'POST': {
+        const isInvalid = await validator(authenticateUser, req.body);
+
+        if (isInvalid) return res.status(400).json({ success: false, message: isInvalid });
+
+        const user = await db.user.create({
+          data: {
+            username: req.body.username,
+            password: bcrypt.hashSync(req.body.password, 10),
+            role: req.body.role,
+          },
+        });
+
+        const { createdAt, updatedAt, password, ...result } = user;
+
+        return res.status(200).json({
+          success: true,
+          message: 'User created',
+          result,
+        });
+      }
+
+      default:
+        return res.status(405).json({
+          success: false,
+          message: 'Method not allowed',
+        });
     }
-  },
-  {
-    allowRule: [{ method: '.*', role: 'ADMIN' }],
+  } catch (err) {
+    const { code, message } = errorHandler(err);
+    return res.status(code).json({
+      success: false,
+      message,
+    });
   }
-);
+};
+
+export default requireAuth(handler, {
+  rule: [{ method: '.*', role: 'ADMIN' }],
+});

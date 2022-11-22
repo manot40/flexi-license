@@ -17,6 +17,12 @@ declare type Res<T> = {
   };
 };
 
+declare type CreateUpdateParams<T = any> = {
+  id?: string;
+  body: T;
+  user: User;
+};
+
 declare type User = Omit<import('@prisma/client').User, 'password'>;
 
 declare type License = import('@prisma/client').License;
