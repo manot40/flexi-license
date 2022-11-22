@@ -23,7 +23,7 @@ export default function LicenseTable() {
 
   const isSales = checkRole('SALES');
   const { data, isValidating, mutate } = useSWR<Res<User[]>>(
-    `/api/v1/license?page=${page}&companyId=${search}`,
+    `/api/v1/license?page=${page}&companyId=${search || ''}`,
     fetcher
   );
 
