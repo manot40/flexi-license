@@ -1,17 +1,15 @@
 import fetcher from 'libs/fetcher';
 
 import useSWR from 'swr';
-import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useDebouncedState, useViewportSize, useDisclosure } from '@mantine/hooks';
+import { useMemo, useState } from 'react';
+import { useDebouncedState, useViewportSize } from '@mantine/hooks';
 
-import { LicenseModal } from 'components/license';
-import CompanyModal, { defaultCompanyData } from './CompanyModal';
-
+import CompanyForm from './CompanyForm';
 import { AutoTable, ConfirmPop } from 'components/reusable';
-import { Box, Button, Center, Flex, Input, Pagination, Space, Group, ActionIcon, Tooltip } from '@mantine/core';
+import { Box, Button, Center, Flex, Input, Pagination, Space, Group, ActionIcon, Modal } from '@mantine/core';
 
-import { IconTrash, IconEdit, IconCertificate2 } from '@tabler/icons';
+import { IconTrash, IconEdit } from '@tabler/icons';
 
 type CompanyTableProps = {
   checkRole: (role: User['role'] | User['role'][]) => boolean;
@@ -23,9 +21,7 @@ export default function CompanyTable({ checkRole }: CompanyTableProps) {
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useDebouncedState('', 300);
-  const [company, setCompany] = useState<Partial<Company>>();
-
-  const [licenseOpen, loHandler] = useDisclosure(false);
+  const [company, setCompany] = useState<Partial<Company> | null>(null);
 
   const { data, isValidating, mutate } = useSWR<Res<User[]>>(`/api/v1/company?page=${page}&name=${search}`, fetcher);
 
@@ -60,27 +56,19 @@ export default function CompanyTable({ checkRole }: CompanyTableProps) {
   return (
     <>
       {isSales && (
-        <>
-          <CompanyModal
-            value={company}
-            opened={!!company}
-            onSubmitted={() => mutate()}
-            onClose={setCompany as () => undefined}
-          />
-          <LicenseModal opened={licenseOpen} onClose={loHandler.close} />
-        </>
+        <Modal
+          opened={!!company}
+          onClose={() => setCompany(null)}
+          title={!!company?.id ? `Edit ${company.name} data` : 'Create New Company'}>
+          <CompanyForm value={company!} onSubmitted={() => (mutate(), setCompany(null))} />
+        </Modal>
       )}
       <Box>
         <Flex gap={12} direction={{ base: 'column-reverse', xs: 'initial' }} justify="space-between">
           <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
           {isSales && (
             <Group spacing={6} position="right">
-              <Tooltip label="New License">
-                <Button variant="subtle" size="sm" onClick={loHandler.open}>
-                  <IconCertificate2 />
-                </Button>
-              </Tooltip>
-              <Button onClick={() => setCompany(defaultCompanyData)}>New Company</Button>
+              <Button onClick={() => setCompany(null)}>New Company</Button>
             </Group>
           )}
         </Flex>

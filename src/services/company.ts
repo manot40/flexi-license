@@ -28,8 +28,21 @@ export const getMany = async (query: Query) => {
   return { paginate, result };
 };
 
-export const getUnique = async (where: Params['where'], select: Params['select']) => {
-  return await db.company.findUnique({ where, select });
+export const getUnique = async (where: Params['where'], select?: Params['select']) => {
+  return await db.company.findUnique({
+    where,
+    select: {
+      id: true,
+      name: true,
+      contactName: true,
+      contactNumber: true,
+      updatedAt: true,
+      createdAt: true,
+      updatedBy: true,
+      createdBy: true,
+      ...select,
+    },
+  });
 };
 
 export const createOrUpdate = async ({ id, body, user }: CreateUpdateParams<Company>) => {

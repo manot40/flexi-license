@@ -4,27 +4,28 @@ import fetcher from 'libs/fetcher';
 
 import { useForm } from '@mantine/form';
 import { showNotification } from '@mantine/notifications';
-import { CompanySelect, ProductSelect } from 'components/reusable';
 import { DateRangePicker, type DateRangePickerValue } from '@mantine/dates';
-import { Modal, NumberInput, Stack, Button, Space, Checkbox } from '@mantine/core';
+import { Button, Checkbox, NumberInput, Space, Stack, TextInput } from '@mantine/core';
 
-type LicenseModalProps = {
-  opened: boolean;
-  onClose: () => void;
-  value?: Partial<License> | null;
+import { CompanySelect, ProductSelect } from 'components/reusable';
+
+type LicenseFormProps = {
+  value?: Partial<License>;
+  companyId?: string;
+  productCode?: string;
   onSubmitted?: (data: License) => void;
-} & React.HTMLAttributes<HTMLDivElement>;
+} & Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
-export default function LicenseModal({ opened, value, onClose, onSubmitted }: LicenseModalProps) {
+export default function LicenseForm({ value, onSubmitted, companyId, productCode, ...others }: LicenseFormProps) {
   const [loading, setLoading] = useState(false);
   const [isSubscribe, setIsSubscribe] = useState(false);
   const [subsRange, setSubsRange] = useState<DateRangePickerValue>([null, null]);
 
-  const { setValues, reset, onSubmit, getInputProps } = useForm({
+  const { setValues, reset, getInputProps, onSubmit } = useForm({
     initialValues: (value as License) || defaultLicenseData,
     validate: {
-      productCode: (value) => !value && 'Product is required',
-      companyId: (val) => !val && 'Company ID is required',
+      productCode: (val) => !val && !productCode && 'Product is required',
+      companyId: (val) => !val && !companyId && 'Company ID is required',
       maxUser: (val) => val < 1 && 'Max user must be greater than 0',
     },
   });
@@ -44,13 +45,14 @@ export default function LicenseModal({ opened, value, onClose, onSubmitted }: Li
     // eslint-disable-next-line
   }, [value]);
 
-  const isEdit = !!value?.id;
-
   const handleSubmit = async (license: License) => {
     setLoading(true);
-    const t = isEdit ? 'update' : 'create';
+    const t = !!value?.id ? 'update' : 'create';
     try {
       const body = { ...license };
+
+      companyId && (body.companyId = companyId);
+      productCode && (body.productCode = productCode);
 
       if (isSubscribe) {
         body.type = 'CLOUD';
@@ -69,13 +71,13 @@ export default function LicenseModal({ opened, value, onClose, onSubmitted }: Li
       }
 
       const res = await fetcher<Res<License>>(`/api/v1/license/${value?.id || ''}`, {
-        method: isEdit ? 'PUT' : 'POST',
+        method: !!value?.id ? 'PUT' : 'POST',
         body,
       });
+
       if (res.success) {
         showNotification({ color: 'green', title: 'Success', message: `License ${t}d` });
         onSubmitted?.(res.result);
-        onClose?.();
         reset();
       }
     } catch (err: any) {
@@ -85,12 +87,9 @@ export default function LicenseModal({ opened, value, onClose, onSubmitted }: Li
   };
 
   return (
-    <Modal
-      opened={opened}
-      onClose={() => (reset(), onClose?.())}
-      title={isEdit ? `Edit license data` : 'Create New License'}>
-      <form onSubmit={onSubmit(handleSubmit)}>
-        <Stack>
+    <form onSubmit={onSubmit(handleSubmit)}>
+      <Stack>
+        {!productCode ? (
           <ProductSelect
             w="100%"
             label="Product"
@@ -99,6 +98,12 @@ export default function LicenseModal({ opened, value, onClose, onSubmitted }: Li
             fields={['id', 'name', 'code']}
             {...getInputProps('productCode')}
           />
+        ) : (
+          <>
+            <input type="hidden" value={productCode} />
+          </>
+        )}
+        {!companyId ? (
           <CompanySelect
             w="100%"
             label="Company"
@@ -106,24 +111,28 @@ export default function LicenseModal({ opened, value, onClose, onSubmitted }: Li
             placeholder="Select Company"
             {...getInputProps('companyId')}
           />
-          <NumberInput w="100%" label="Max User" placeholder="" min={1} {...getInputProps('maxUser')} />
-          <div>
-            <Checkbox
-              checked={isSubscribe}
-              label="Cloud Subscription"
-              onChange={(r) => setIsSubscribe(r.currentTarget.checked)}
-            />
-            {isSubscribe && (
-              <DateRangePicker mt={4} w="100%" label="Subscription Period" value={subsRange} onChange={setSubsRange} />
-            )}
-          </div>
-          <Space />
-          <Button disabled={isSubscribe && (!subsRange[0] || !subsRange[1])} loading={loading} type="submit">
-            Submit
-          </Button>
-        </Stack>
-      </form>
-    </Modal>
+        ) : (
+          <>
+            <input type="hidden" value={companyId} />
+          </>
+        )}
+        <NumberInput w="100%" label="Max User" min={1} {...getInputProps('maxUser')} />
+        <div>
+          <Checkbox
+            checked={isSubscribe}
+            label="Cloud Subscription"
+            onChange={(r) => setIsSubscribe(r.currentTarget.checked)}
+          />
+          {isSubscribe && (
+            <DateRangePicker mt={4} w="100%" label="Subscription Period" value={subsRange} onChange={setSubsRange} />
+          )}
+        </div>
+        <Space />
+        <Button disabled={isSubscribe && (!subsRange[0] || !subsRange[1])} loading={loading} type="submit">
+          Submit
+        </Button>
+      </Stack>
+    </form>
   );
 }
 

@@ -4,16 +4,14 @@ import fetcher from 'libs/fetcher';
 
 import { useForm } from '@mantine/form';
 import { showNotification } from '@mantine/notifications';
-import { Modal, TextInput, Stack, Button, Space } from '@mantine/core';
+import { Button, Space, Stack, TextInput } from '@mantine/core';
 
-type CompanyModalProps = {
-  opened: boolean;
-  onClose: () => void;
-  value?: Partial<Company> | null;
+type CompanyFormProps = {
+  value?: Partial<Company>;
   onSubmitted?: (data: Company) => void;
-} & React.HTMLAttributes<HTMLDivElement>;
+} & Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
-export default function CompanyModal({ opened, value, onClose, onSubmitted }: CompanyModalProps) {
+export default function CompanyForm({ value, onSubmitted, ...others }: CompanyFormProps) {
   const [loading, setLoading] = useState(false);
 
   const { setValues, reset, getInputProps, onSubmit } = useForm({
@@ -35,20 +33,17 @@ export default function CompanyModal({ opened, value, onClose, onSubmitted }: Co
     // eslint-disable-next-line
   }, [value]);
 
-  const isEdit = !!value?.id;
-
   const handleSubmit = async (body: Company) => {
     setLoading(true);
-    const t = isEdit ? 'update' : 'create';
+    const t = !!value?.id ? 'update' : 'create';
     try {
       const res = await fetcher<Res<Company>>(`/api/v1/company/${value?.id || ''}`, {
-        method: isEdit ? 'PUT' : 'POST',
+        method: !!value?.id ? 'PUT' : 'POST',
         body,
       });
       if (res.success) {
         showNotification({ color: 'green', title: 'Success', message: `Company ${body.name} ${t}d` });
         onSubmitted?.(res.result);
-        onClose?.();
         reset();
       }
     } catch (err: any) {
@@ -58,22 +53,17 @@ export default function CompanyModal({ opened, value, onClose, onSubmitted }: Co
   };
 
   return (
-    <Modal
-      opened={opened}
-      onClose={() => (reset(), onClose?.())}
-      title={isEdit ? `Edit ${value.name} data` : 'Create New Company'}>
-      <form onSubmit={onSubmit(handleSubmit)}>
-        <Stack>
-          <TextInput w="100%" label="Name" placeholder="Acme. Inc." {...getInputProps('name')} />
-          <TextInput w="100%" label="Contact Person" placeholder="John Doe" {...getInputProps('contactName')} />
-          <TextInput w="100%" label="Contact Number" placeholder="0123456789" {...getInputProps('contactNumber')} />
-          <Space />
-          <Button loading={loading} type="submit">
-            Submit
-          </Button>
-        </Stack>
-      </form>
-    </Modal>
+    <form {...others} onSubmit={onSubmit(handleSubmit)}>
+      <Stack>
+        <TextInput w="100%" label="Name" placeholder="Acme. Inc." {...getInputProps('name')} />
+        <TextInput w="100%" label="Contact Person" placeholder="John Doe" {...getInputProps('contactName')} />
+        <TextInput w="100%" label="Contact Number" placeholder="0123456789" {...getInputProps('contactNumber')} />
+        <Space />
+        <Button loading={loading} type="submit">
+          Submit
+        </Button>
+      </Stack>
+    </form>
   );
 }
 

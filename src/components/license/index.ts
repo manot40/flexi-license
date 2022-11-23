@@ -1,2 +1,2 @@
 export { default as LicenseTable } from './LicenseTable';
-export { default as LicenseModal } from './LicenseModal';
+export { default as LicenseForm } from './LicenseForm';

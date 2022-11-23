@@ -6,16 +6,13 @@ jobs:
   codeqc:
     name: 'CodeQualityCheck'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
-      - name: 'Using Node.js ${{ matrix.node-version }}'
+      - name: 'Using Node.js 16'
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 16.x
       - name: 'Install dependencies'
         run: npm install
       - name: 'Formatting check'
@@ -33,7 +30,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Cloning repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -41,5 +38,5 @@ jobs:
         uses: dokku/github-action@master
         with:
           git_push_flags: --force
-          git_remote_url: 'ssh://dokku@158.101.144.203:22/flexi-license'
+          git_remote_url: 'ssh://dokku@${{ secrets.JP2_ADDRESS }}/flexi-license'
           ssh_private_key: ${{ secrets.JP2_PRIVATE_KEY }}
