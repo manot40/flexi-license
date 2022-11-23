@@ -17,7 +17,7 @@ export type AuthOptions = {
 
 export type CtxWithUser = (req: NextReqWithUser, res: NextRes) => Promise<void>;
 
-export async function getAuthUser(req: NextReq) {
+export async function getAuthUser(req: { cookies: any }) {
   const accessToken = req.cookies.accessToken;
   if (accessToken) return await verify<User>(accessToken);
   return null;

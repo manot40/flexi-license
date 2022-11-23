@@ -1,29 +1,40 @@
 import fetcher from 'libs/fetcher';
 
 import useSWR from 'swr';
-import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
 import { useViewportSize } from '@mantine/hooks';
+import { useAuth } from 'components/AuthContext';
 
 import { AutoTable, CompanySelect } from 'components/reusable';
-import { Box, Center, Flex, Pagination, Space, Group, Select } from '@mantine/core';
+import { Center, Flex, Pagination, Group, Select, Stack, Title } from '@mantine/core';
 
 export default function LicenseTable() {
-  const { push } = useRouter();
   const { width } = useViewportSize();
+  const { checkRole } = useAuth();
+  const { push, replace } = useRouter();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('' as License['type']);
 
-  const { data, isValidating } = useSWR<Res<User[]>>(
+  const { data } = useSWR<Res<User[]>>(
     `/api/v1/license?page=${page}&companyId=${search || ''}&type=${type}:equals`,
     fetcher
   );
 
+  const isEligible = checkRole('SUPPORT');
+
+  useEffect(() => {
+    if (!isEligible) replace('/dashboard');
+  }, [isEligible, replace]);
+
+  if (!isEligible) return null;
+
   return (
-    <>
-      <Box>
+    <Stack spacing={32}>
+      <Title order={1}>Manage Company</Title>
+      <Stack spacing={16}>
         <Flex gap={12} direction={{ base: 'column', xs: 'initial' }} justify="space-between">
           <Group spacing={8} position="left" noWrap>
             <CompanySelect
@@ -40,23 +51,20 @@ export default function LicenseTable() {
             />
           </Group>
         </Flex>
-        <Space h={16} />
         <AutoTable
           highlightOnHover
           columns={columns}
           data={data?.result}
           useScroll={width <= 768}
-          isLoading={isValidating}
           onClick={(row) => push(`/dashboard/license/${row.id}`)}
         />
-        <Space h={16} />
         {data && !!data.result.length && (
           <Center>
             <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
           </Center>
         )}
-      </Box>
-    </>
+      </Stack>
+    </Stack>
   );
 }
 

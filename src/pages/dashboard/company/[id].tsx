@@ -2,69 +2,14 @@ import type { GetServerSideProps } from 'next';
 
 import { company } from 'services';
 
-import { useState } from 'react';
-import { useAuth } from 'components/AuthContext';
-import { useDisclosure } from '@mantine/hooks';
-
-import { IconCertificate2 } from '@tabler/icons';
-import { LicenseForm } from 'components/license';
-import { CompanyForm } from 'components/company';
-import { AutoTable, Result } from 'components/reusable';
-import { Stack, Button, Flex, Modal, Space, Title } from '@mantine/core';
+import Content from 'components/company/ContentDetail';
 
 type Props = {
   data?: Company & { licenses: License[] };
 };
 
 export default function CompanyDetail({ data }: Props) {
-  const { checkRole } = useAuth();
-  const [opened, handler] = useDisclosure(false);
-  const [company, setCompany] = useState({ ...data, licenses: undefined });
-  const [licenses, setLicenses] = useState(data?.licenses || []);
-
-  if (!data) return <Result type="404" />;
-
-  const isSales = checkRole('SALES');
-
-  const handleLicenseFormClose = (data: License) => {
-    setLicenses((prev) => [data, ...prev]);
-    handler.close();
-  };
-
-  return (
-    <Stack>
-      <Title order={1}>{company.name}</Title>
-      <Space h={32} />
-      <Flex gap={32} direction={{ base: 'column', lg: 'row' }}>
-        <Flex w={{ base: '100%', lg: '30%' }} gap={12} direction="column">
-          <Title order={3}>Company Details</Title>
-          <CompanyForm
-            style={{ width: '100%' }}
-            value={company}
-            onSubmitted={(data) => setCompany({ ...company, ...data })}
-          />
-        </Flex>
-        <Flex gap={12} direction="column">
-          <Stack w={'100%'}>
-            <Flex justify="space-between">
-              <Title order={3}>Company Licenses</Title>
-              {isSales && (
-                <Button leftIcon={<IconCertificate2 />} onClick={handler.open}>
-                  Publish License
-                </Button>
-              )}
-            </Flex>
-          </Stack>
-          <AutoTable data={licenses.map((license) => license)} columns={cols} />
-        </Flex>
-      </Flex>
-      {isSales && (
-        <Modal opened={opened} onClose={handler.close} title={`Publish License for ${company.name}`}>
-          <LicenseForm companyId={company.id} onSubmitted={handleLicenseFormClose} />
-        </Modal>
-      )}
-    </Stack>
-  );
+  return <Content data={data} />;
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
@@ -103,54 +48,3 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     },
   };
 };
-
-const cols = [
-  {
-    key: 'key',
-    title: 'License Key',
-  },
-  {
-    key: 'product',
-    title: 'Product',
-    render: (row: Product) => `${row?.name} (${row?.code})`,
-  },
-  {
-    key: 'maxUser',
-    title: 'Max User',
-  },
-  {
-    key: 'type',
-    title: 'Type',
-  },
-  {
-    key: 'subscriptionStart',
-    title: 'Subscription Start',
-    width: 180,
-    render: (cell: string) =>
-      Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
-  },
-  {
-    key: 'subscriptionEnd',
-    title: 'Subscription End',
-    width: 180,
-    render: (cell: string) =>
-      cell ? (
-        Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell))
-      ) : (
-        <i>(on-prem)</i>
-      ),
-  },
-
-  {
-    key: 'updatedAt',
-    title: 'Last Update',
-    width: 180,
-    render: (cell: string) =>
-      Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
-  },
-  {
-    key: 'updatedBy',
-    title: 'Updated By',
-    width: 120,
-  },
-];

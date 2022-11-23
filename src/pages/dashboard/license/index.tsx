@@ -1,27 +1,38 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useAuth } from 'components/AuthContext';
+import type { GetServerSideProps } from 'next/types';
 
-import { LicenseTable } from 'components/license';
-import { Box, Space, Title } from '@mantine/core';
+import { SWRConfig } from 'swr';
+import { license } from 'services';
+import { getAuthUser } from 'middleware/requireAuth';
 
-export default function LicenseIndex() {
-  const { checkRole } = useAuth();
-  const { replace } = useRouter();
+import Content from 'components/license/ContentIndex';
 
-  const isEligible = checkRole('SUPPORT');
-
-  useEffect(() => {
-    if (!isEligible) replace('/dashboard');
-  }, [isEligible, replace]);
-
-  if (!isEligible) return null;
-
+export default function LicenseIndex({ fallback }: { fallback: Res<License[]> }) {
   return (
-    <Box>
-      <Title order={1}>Manage License</Title>
-      <Space h={32} />
-      <LicenseTable />
-    </Box>
+    <SWRConfig value={{ fallback }}>
+      <Content />
+    </SWRConfig>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async ({ req, res, query }) => {
+  const user = await getAuthUser(req);
+
+  const reqUrl = `/api/v1/license?page=${query.page || 1}&companyId=${query.search || ''}&type=${
+    query.type || ''
+  }:equals`;
+
+  if (!user) {
+    res.writeHead(302, { Location: `/login?redirect=${req.url}` });
+    res.end();
+  }
+
+  const { paginate, result } = await license.getMany(query);
+
+  return {
+    props: {
+      fallback: {
+        [reqUrl]: { paginate, result: JSON.parse(JSON.stringify(result)) },
+      },
+    },
+  };
+};

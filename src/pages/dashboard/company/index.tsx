@@ -1,15 +1,35 @@
-import { useAuth } from 'components/AuthContext';
+import type { GetServerSideProps } from 'next/types';
 
-import { CompanyTable } from 'components/company';
-import { Box, Space, Title } from '@mantine/core';
+import { SWRConfig } from 'swr';
+import { company } from 'services';
+import { getAuthUser } from 'middleware/requireAuth';
 
-export default function CompanyIndex() {
-  const { checkRole } = useAuth();
+import Content from 'components/company/ContentIndex';
+
+export default function CompanyIndex({ fallback }: { fallback: Res<Company[]> }) {
   return (
-    <Box>
-      <Title order={1}>Manage Company</Title>
-      <Space h={32} />
-      <CompanyTable checkRole={checkRole} />
-    </Box>
+    <SWRConfig value={{ fallback }}>
+      <Content />
+    </SWRConfig>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async ({ req, res, query }) => {
+  const user = await getAuthUser(req);
+  const reqUrl = `/api/v1/company?page=${query.page || 1}&name=${query.name || ''}`;
+
+  if (!user) {
+    res.writeHead(302, { Location: `/login?redirect=${req.url}` });
+    res.end();
+  }
+
+  const { paginate, result } = await company.getMany(query);
+
+  return {
+    props: {
+      fallback: {
+        [reqUrl]: { paginate, result: JSON.parse(JSON.stringify(result)) },
+      },
+    },
+  };
+};

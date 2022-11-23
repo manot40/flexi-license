@@ -3,27 +3,24 @@ import fetcher from 'libs/fetcher';
 import useSWR from 'swr';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
+import { useAuth } from 'components/AuthContext';
 import { useDebouncedState, useViewportSize } from '@mantine/hooks';
 
+import { IconTrash, IconEdit } from '@tabler/icons';
 import { AutoTable, ConfirmPop } from 'components/reusable';
 import CompanyForm, { defaultCompanyData } from './CompanyForm';
-import { Box, Button, Center, Flex, Input, Pagination, Space, Group, ActionIcon, Modal } from '@mantine/core';
+import { Flex, Input, Group, Modal, Title, Stack, Button, Center, Pagination, ActionIcon } from '@mantine/core';
 
-import { IconTrash, IconEdit } from '@tabler/icons';
-
-type CompanyTableProps = {
-  checkRole: (role: User['role'] | User['role'][]) => boolean;
-};
-
-export default function CompanyTable({ checkRole }: CompanyTableProps) {
+export default function ContentIndex() {
   const { push } = useRouter();
   const { width } = useViewportSize();
+  const { checkRole } = useAuth();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useDebouncedState('', 300);
   const [company, setCompany] = useState<Partial<Company> | null>(null);
 
-  const { data, isValidating, mutate } = useSWR<Res<User[]>>(`/api/v1/company?page=${page}&name=${search}`, fetcher);
+  const { data, mutate } = useSWR<Res<User[]>>(`/api/v1/company?page=${page}&name=${search}`, fetcher);
 
   const handleDelete = async (id: string) => console.log(id);
 
@@ -54,7 +51,8 @@ export default function CompanyTable({ checkRole }: CompanyTableProps) {
   }, [isSales]);
 
   return (
-    <>
+    <Stack spacing={32}>
+      <Title order={1}>Manage Company</Title>
       {isSales && (
         <Modal
           opened={!!company}
@@ -63,7 +61,7 @@ export default function CompanyTable({ checkRole }: CompanyTableProps) {
           <CompanyForm value={company!} onSubmitted={() => (mutate(), setCompany(null))} />
         </Modal>
       )}
-      <Box>
+      <Stack spacing={16}>
         <Flex gap={12} direction={{ base: 'column-reverse', xs: 'initial' }} justify="space-between">
           <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
           {isSales && (
@@ -72,23 +70,20 @@ export default function CompanyTable({ checkRole }: CompanyTableProps) {
             </Group>
           )}
         </Flex>
-        <Space h={16} />
         <AutoTable
           highlightOnHover
           data={data?.result}
           useScroll={width <= 768}
-          isLoading={isValidating}
           columns={renderedColumn}
           onClick={(row) => push(`/dashboard/company/${row.id}`)}
         />
-        <Space h={16} />
         {data && !!data.result.length && (
           <Center>
             <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
           </Center>
         )}
-      </Box>
-    </>
+      </Stack>
+    </Stack>
   );
 }
 
