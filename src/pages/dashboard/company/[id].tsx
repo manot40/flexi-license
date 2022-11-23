@@ -1,9 +1,9 @@
 import type { GetServerSideProps } from 'next';
 
-import { useState } from 'react';
-
 import { company } from 'services';
 
+import { useState } from 'react';
+import { useAuth } from 'components/AuthContext';
 import { useDisclosure } from '@mantine/hooks';
 
 import { AutoTable } from 'components/reusable';
@@ -17,8 +17,8 @@ type Props = {
 };
 
 export default function CompanyDetail({ data }: Props) {
+  const { checkRole } = useAuth();
   const [opened, handler] = useDisclosure(false);
-
   const [company, setCompany] = useState({ ...data, licenses: undefined });
   const [licenses, setLicenses] = useState(data.licenses);
 
@@ -26,6 +26,8 @@ export default function CompanyDetail({ data }: Props) {
     setLicenses((prev) => [data, ...prev]);
     handler.close();
   };
+
+  const isSales = checkRole('SALES');
 
   return (
     <Box>
@@ -44,17 +46,21 @@ export default function CompanyDetail({ data }: Props) {
           <Box w={'100%'}>
             <Flex justify="space-between">
               <Title order={3}>Company Licenses</Title>
-              <Button leftIcon={<IconCertificate2 />} onClick={handler.open}>
-                Publish License
-              </Button>
+              {isSales && (
+                <Button leftIcon={<IconCertificate2 />} onClick={handler.open}>
+                  Publish License
+                </Button>
+              )}
             </Flex>
           </Box>
           <AutoTable data={licenses.map((license) => license)} columns={cols} />
         </Flex>
       </Flex>
-      <Modal opened={opened} onClose={handler.close} title={`Publish License for ${company.name}`}>
-        <LicenseForm companyId={company.id} onSubmitted={handleLicenseFormClose} />
-      </Modal>
+      {isSales && (
+        <Modal opened={opened} onClose={handler.close} title={`Publish License for ${company.name}`}>
+          <LicenseForm companyId={company.id} onSubmitted={handleLicenseFormClose} />
+        </Modal>
+      )}
     </Box>
   );
 }

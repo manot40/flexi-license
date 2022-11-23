@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import fetcher from 'libs/fetcher';
 
 import { useForm } from '@mantine/form';
+import { useAuth } from 'components/AuthContext';
 import { showNotification } from '@mantine/notifications';
 import { Button, Space, Stack, TextInput } from '@mantine/core';
 
@@ -12,6 +13,7 @@ type CompanyFormProps = {
 } & Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit' | 'children'>;
 
 export default function CompanyForm({ value, onSubmitted, ...others }: CompanyFormProps) {
+  const { checkRole } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const { setValues, reset, getInputProps, onSubmit } = useForm({
@@ -33,7 +35,11 @@ export default function CompanyForm({ value, onSubmitted, ...others }: CompanyFo
     // eslint-disable-next-line
   }, [value]);
 
+  const isSales = checkRole('SALES');
+
   const handleSubmit = async (body: Company) => {
+    if (!isSales) return showNotification({ message: 'You are not authorized to do this' });
+
     setLoading(true);
     const t = !!value?.id ? 'update' : 'create';
     try {
@@ -59,7 +65,7 @@ export default function CompanyForm({ value, onSubmitted, ...others }: CompanyFo
         <TextInput w="100%" label="Contact Person" placeholder="John Doe" {...getInputProps('contactName')} />
         <TextInput w="100%" label="Contact Number" placeholder="0123456789" {...getInputProps('contactNumber')} />
         <Space />
-        <Button loading={loading} type="submit">
+        <Button disabled={!isSales} loading={loading} type="submit">
           Submit
         </Button>
       </Stack>

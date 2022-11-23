@@ -5,8 +5,8 @@ import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { useDebouncedState, useViewportSize } from '@mantine/hooks';
 
-import CompanyForm from './CompanyForm';
 import { AutoTable, ConfirmPop } from 'components/reusable';
+import CompanyForm, { defaultCompanyData } from './CompanyForm';
 import { Box, Button, Center, Flex, Input, Pagination, Space, Group, ActionIcon, Modal } from '@mantine/core';
 
 import { IconTrash, IconEdit } from '@tabler/icons';
@@ -68,7 +68,7 @@ export default function CompanyTable({ checkRole }: CompanyTableProps) {
           <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
           {isSales && (
             <Group spacing={6} position="right">
-              <Button onClick={() => setCompany(null)}>New Company</Button>
+              <Button onClick={() => setCompany(defaultCompanyData)}>New Company</Button>
             </Group>
           )}
         </Flex>
