@@ -6,31 +6,33 @@ import { useState } from 'react';
 import { useAuth } from 'components/AuthContext';
 import { useDisclosure } from '@mantine/hooks';
 
-import { AutoTable } from 'components/reusable';
 import { IconCertificate2 } from '@tabler/icons';
 import { LicenseForm } from 'components/license';
 import { CompanyForm } from 'components/company';
-import { Box, Button, Flex, Modal, Space, Title } from '@mantine/core';
+import { AutoTable, Result } from 'components/reusable';
+import { Stack, Button, Flex, Modal, Space, Title } from '@mantine/core';
 
 type Props = {
-  data: Company & { licenses: License[] };
+  data?: Company & { licenses: License[] };
 };
 
 export default function CompanyDetail({ data }: Props) {
   const { checkRole } = useAuth();
   const [opened, handler] = useDisclosure(false);
   const [company, setCompany] = useState({ ...data, licenses: undefined });
-  const [licenses, setLicenses] = useState(data.licenses);
+  const [licenses, setLicenses] = useState(data?.licenses || []);
+
+  if (!data) return <Result type="404" />;
+
+  const isSales = checkRole('SALES');
 
   const handleLicenseFormClose = (data: License) => {
     setLicenses((prev) => [data, ...prev]);
     handler.close();
   };
 
-  const isSales = checkRole('SALES');
-
   return (
-    <Box>
+    <Stack>
       <Title order={1}>{company.name}</Title>
       <Space h={32} />
       <Flex gap={32} direction={{ base: 'column', lg: 'row' }}>
@@ -43,7 +45,7 @@ export default function CompanyDetail({ data }: Props) {
           />
         </Flex>
         <Flex gap={12} direction="column">
-          <Box w={'100%'}>
+          <Stack w={'100%'}>
             <Flex justify="space-between">
               <Title order={3}>Company Licenses</Title>
               {isSales && (
@@ -52,7 +54,7 @@ export default function CompanyDetail({ data }: Props) {
                 </Button>
               )}
             </Flex>
-          </Box>
+          </Stack>
           <AutoTable data={licenses.map((license) => license)} columns={cols} />
         </Flex>
       </Flex>
@@ -61,7 +63,7 @@ export default function CompanyDetail({ data }: Props) {
           <LicenseForm companyId={company.id} onSubmitted={handleLicenseFormClose} />
         </Modal>
       )}
-    </Box>
+    </Stack>
   );
 }
 
@@ -97,7 +99,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   return {
     props: {
-      data: JSON.parse(JSON.stringify(result!)),
+      data: JSON.parse(JSON.stringify(result)),
     },
   };
 };

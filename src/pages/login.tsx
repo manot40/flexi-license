@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { useRouter } from 'next/router';
 import { useForm } from '@mantine/form';
 import { useAuth } from 'components/AuthContext';
 import { showNotification } from '@mantine/notifications';
 import { Flex, Card, Button, TextInput, PasswordInput, LoadingOverlay, Checkbox, Title, Space } from '@mantine/core';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
+  const { query, replace } = useRouter();
   const [visible, setVisible] = useState(false);
 
   const form = useForm({
@@ -16,6 +18,18 @@ export default function Login() {
       remember: false,
     },
   });
+
+  useEffect(() => {
+    if (user) {
+      if (!query.redirect) replace('/dashboard');
+      else replace(query.redirect as string);
+    }
+
+    if (query.message) {
+      showNotification({ message: query.message as string });
+      replace(`/login?redirect=${query.redirect || ''}`);
+    }
+  }, [query, user, replace]);
 
   const handleLogin = async (val: any) => {
     setVisible(true);
@@ -36,6 +50,8 @@ export default function Login() {
 
     setVisible(false);
   };
+
+  if (user) return <LoadingOverlay visible={true} />;
 
   return (
     <Flex

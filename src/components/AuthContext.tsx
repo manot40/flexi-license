@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/router';
 
 import fetcher from 'libs/fetcher';
 
-import { LoadingOverlay } from '@mantine/core';
+import useSWR from 'swr';
+import { useRouter } from 'next/router';
 
 type AuthContextType = {
   user?: User;
@@ -21,29 +21,25 @@ type LoginInput = {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>();
+  const { data, error, mutate } = useSWR<Res<User>>('/api/auth', fetcher);
   const [loading, setLoading] = useState(true);
-
   const { pathname, replace } = useRouter();
 
+  const user = useMemo(() => (error ? undefined : data?.result), [data, error]);
+
   useEffect(() => {
-    if (loading)
-      fetcher<Res<User>>('/api/auth')
-        .then((res) => {
-          setUser(res.result);
-          if (res.result && pathname.includes('login')) replace('/dashboard');
-          if (!res.result && pathname.includes('dashboard')) replace('/login');
-        })
-        .catch(() => {
-          if (pathname.includes('dashboard')) replace('/login');
-        })
-        .finally(() => setLoading(false));
-  }, [pathname, replace, loading]);
+    if (!(!user && !error)) setLoading(false);
+
+    if (error) {
+      const _pathname = window.location.pathname;
+      const message = data ? 'Session expired, please re-login' : '';
+      if (pathname.includes('dashboard')) replace(`/login?redirect=${_pathname}&message=${message}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error, user, pathname]);
 
   async function login(val: LoginInput) {
     const res = await fetcher<Res<{ user: User; token: string }>>('/api/auth', {
@@ -55,15 +51,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       },
     });
 
-    setUser(res.result.user);
-    replace('/dashboard');
+    await mutate({ result: res.result.user } as Res<any>);
     return res.result.user;
   }
 
-  function logout() {
-    fetcher<Res<User>>('/api/auth', { method: 'DELETE' });
-    setUser(undefined);
+  async function logout() {
+    await fetcher<Res<User>>('/api/auth', { method: 'DELETE' });
     replace('/login');
+    mutate();
   }
 
   const checkRole = (role: User['role'] | User['role'][]) => {
@@ -84,9 +79,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     [user, loading]
   );
 
-  if (loading) return <LoadingOverlay visible={true} />;
-
-  if (pathname.includes('login') && user) return null;
+  if (loading) return null;
 
   if (pathname.includes('dashboard') && !user) return null;
 

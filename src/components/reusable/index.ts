@@ -3,3 +3,4 @@ export { default as StatsCard } from './StatsCard';
 export { default as ConfirmPop } from './ConfirmPop';
 export { default as CompanySelect } from './CompanySelect';
 export { default as ProductSelect } from './ProductSelect';
+export { default as Result } from './Result';
