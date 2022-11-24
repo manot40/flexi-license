@@ -5,6 +5,8 @@ import {
   PrismaClientUnknownRequestError as DBUnknownReqErr,
 } from '@prisma/client/runtime';
 
+import { AxiosError } from 'axios';
+
 type ErrorResponse = {
   code: number;
   message: string;
@@ -31,6 +33,11 @@ export default function errorHandler(err: any): ErrorResponse {
   if (err instanceof DBFatalErr) {
     console.error('Fatal error occurred in the database engine');
     console.error(err.message);
+  }
+
+  if (err instanceof AxiosError) {
+    const { response: res } = err;
+    console.error(res?.status, res?.data);
   }
 
   return res;

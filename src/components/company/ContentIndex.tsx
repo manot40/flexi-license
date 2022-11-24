@@ -22,8 +22,6 @@ export default function ContentIndex() {
 
   const { data, mutate } = useSWR<Res<User[]>>(`/api/v1/company?page=${page}&name=${search}`, fetcher);
 
-  const handleDelete = async (id: string) => console.log(id);
-
   const isSales = checkRole('SALES');
 
   const renderedColumn = useMemo(() => {
@@ -34,15 +32,10 @@ export default function ContentIndex() {
         key: 'id',
         title: 'Action',
         render: (cell: string, row: Company) => (
-          <Group spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
+          <Group noWrap spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
             <ActionIcon color="blue" onClick={() => setCompany(row)}>
               <IconEdit size={16} stroke={1.5} />
             </ActionIcon>
-            <ConfirmPop color="red" onConfirm={() => handleDelete(cell)}>
-              <ActionIcon color="red">
-                <IconTrash size={16} />
-              </ActionIcon>
-            </ConfirmPop>
           </Group>
         ),
       });

@@ -24,6 +24,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, query }
   if (!user) {
     res.writeHead(302, { Location: `/login?redirect=${req.url}` });
     res.end();
+  } else if (!['ADMIN', 'SUPPORT'].includes(user.role)) {
+    res.writeHead(302, { Location: `/dashboard` });
+    res.end();
   }
 
   const { paginate, result } = await license.getMany(query);

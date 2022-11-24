@@ -28,8 +28,6 @@ export default function ProductTable() {
     fetcher
   );
 
-  const handleDelete = async (id: string) => console.log(id);
-
   return (
     <>
       {isSales && (
@@ -63,7 +61,7 @@ export default function ProductTable() {
           data={data?.result}
           useScroll={width <= 768}
           isLoading={isValidating}
-          columns={columns(setProduct, handleDelete)}
+          columns={columns(setProduct)}
           onClick={(row) => push(`/dashboard/product/${row.code}`)}
         />
         <Space h={16} />
@@ -82,7 +80,7 @@ const statusSelectData = [
   { value: 'false', label: 'Inactive' },
 ];
 
-const columns = (mutator: any, deleteHandler: any) => [
+const columns = (mutator: any) => [
   {
     key: 'name',
     title: 'Product Name',
@@ -115,15 +113,10 @@ const columns = (mutator: any, deleteHandler: any) => [
     key: 'id',
     title: 'Action',
     render: (cell: string, row: Company) => (
-      <Group spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
+      <Group noWrap spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
         <ActionIcon color="blue" onClick={() => mutator(row)}>
           <IconEdit size={16} stroke={1.5} />
         </ActionIcon>
-        <ConfirmPop color="red" onConfirm={() => deleteHandler(cell)}>
-          <ActionIcon color="red">
-            <IconTrash size={16} />
-          </ActionIcon>
-        </ConfirmPop>
       </Group>
     ),
   },

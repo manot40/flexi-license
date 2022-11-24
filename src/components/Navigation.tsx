@@ -10,11 +10,11 @@ import { Navbar, Center, Tooltip, UnstyledButton, createStyles, Stack, Text, Bur
 import {
   type TablerIcon,
   IconHome2,
-  IconUsers,
   IconLogout,
   IconBoxSeam,
   IconAffiliate,
   IconAddressBook,
+  IconAdjustmentsAlt,
   IconFileCertificate,
 } from '@tabler/icons';
 
@@ -176,5 +176,5 @@ const menu = [
   { icon: IconBoxSeam, label: 'product', roles: ['ADMIN'] },
   { icon: IconAddressBook, label: 'company' },
   { icon: IconFileCertificate, label: 'license', roles: ['ADMIN', 'SUPPORT'] },
-  { icon: IconUsers, label: 'users', roles: ['ADMIN'] },
+  { icon: IconAdjustmentsAlt, label: 'admin', roles: ['ADMIN'] },
 ];

@@ -17,9 +17,11 @@ export type AuthOptions = {
 
 export type CtxWithUser = (req: NextReqWithUser, res: NextRes) => Promise<void>;
 
-export async function getAuthUser(req: { cookies: any }) {
+export async function getAuthUser(req: { cookies: NextReq['cookies']; headers: NextReq['headers'] }) {
   const accessToken = req.cookies.accessToken;
+  const apiToken = req.headers.authorization?.split(' ')[1];
   if (accessToken) return await verify<User>(accessToken);
+  if (apiToken) return await verify<User>(apiToken);
   return null;
 }
 

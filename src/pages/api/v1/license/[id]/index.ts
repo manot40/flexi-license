@@ -1,6 +1,7 @@
+import QueryHelper from 'libs/queryHelper';
 import errorHandler from 'libs/errorHandler';
 
-import validator, { createLicense } from 'validator';
+import validator, { updateLicense } from 'validator';
 
 import requireAuth, { type CtxWithUser } from 'middleware/requireAuth';
 
@@ -8,34 +9,42 @@ import { license } from 'services';
 
 const handler: CtxWithUser = async (req, res) => {
   try {
+    const id = req.query.id;
     const { body, user } = req;
-    const allowedRoles = ['ADMIN', 'SALES'];
 
-    if (req.method != 'GET' && !allowedRoles.includes(req.user.role))
-      return res.status(403).json({
-        success: false,
-        message: 'You are not allowed to access this resource',
+    if (typeof id != 'string')
+      return res.status(400).json({
+        succcess: false,
+        message: 'License id not provided',
       });
+
+    const qh = new QueryHelper(req.query);
 
     switch (req.method) {
       case 'GET': {
-        const { paginate, result } = await license.getMany(req.query);
+        const result = await license.getUnique({ id }, qh.getSelect());
+
+        if (!result)
+          return res.status(404).json({
+            success: false,
+            message: 'License not found',
+          });
 
         return res.status(200).json({
           success: true,
-          paginate,
           result,
         });
       }
 
-      case 'POST': {
-        const errMsg = await validator(createLicense, req.body);
+      case 'PUT': {
+        const errMsg = await validator(updateLicense, req.body);
         if (errMsg) return res.status(400).json({ success: false, message: errMsg });
 
-        const { error, result } = await license.create({ body, user });
+        const { result, error } = await license.update({ id, body, user });
+
         if (error) return res.status(400).json({ success: false, message: error });
 
-        return res.status(201).json({
+        return res.status(200).json({
           success: true,
           result,
         });
@@ -54,5 +63,5 @@ const handler: CtxWithUser = async (req, res) => {
 };
 
 export default requireAuth(handler, {
-  rule: [{ method: 'POST', role: ['ADMIN', 'SALES'] }],
+  rule: [{ method: '.*', role: ['ADMIN', 'SUPPORT'] }],
 });

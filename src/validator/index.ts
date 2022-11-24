@@ -2,7 +2,7 @@ import { type AnySchema, ValidationError } from 'yup';
 
 export { createUser, authenticateUser } from './user';
 export { createUpdateCompany } from './company';
-export { createUpdateLicense } from './license';
+export { createLicense, updateLicense, extendLicense } from './license';
 export { createUpdateProduct } from './product';
 
 export default async function validator(schema: AnySchema, data: unknown) {

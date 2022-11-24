@@ -61,7 +61,7 @@ export default class QueryHelper {
     const where: any = {};
 
     Object.keys(this.query)
-      .filter((k) => !/(order|fields|page)/i.test(k))
+      .filter((k) => !/(order|fields|page|limit)/i.test(k))
       .forEach((key) => {
         if (!this.omit.includes(key)) {
           let value,

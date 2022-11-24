@@ -30,6 +30,7 @@
     "@next/font": "^13.0.3",
     "@prisma/client": "^4.6.1",
     "@tabler/icons": "^1.112.0",
+    "axios": "^1.2.0",
     "bcryptjs": "^2.4.3",
     "cookies-next": "^2.1.1",
     "dayjs": "^1.11.6",

@@ -10,7 +10,7 @@ import { Button, Checkbox, NumberInput, Space, Stack, TextInput } from '@mantine
 import { CompanySelect, ProductSelect } from 'components/reusable';
 
 type LicenseFormProps = {
-  value?: Partial<License>;
+  value?: Partial<License> | null;
   companyId?: string;
   productCode?: string;
   onSubmitted?: (data: License) => void;
@@ -21,12 +21,12 @@ export default function LicenseForm({ value, onSubmitted, companyId, productCode
   const [isSubscribe, setIsSubscribe] = useState(false);
   const [subsRange, setSubsRange] = useState<DateRangePickerValue>([null, null]);
 
-  const { setValues, reset, getInputProps, onSubmit } = useForm({
+  const { setValues, reset, getInputProps, onSubmit, isTouched } = useForm({
     initialValues: (value as License) || defaultLicenseData,
     validate: {
       productCode: (val) => !val && !productCode && 'Product is required',
       companyId: (val) => !val && !companyId && 'Company ID is required',
-      maxUser: (val) => val < 1 && 'Max user must be greater than 0',
+      maxUser: (val) => val < 1 && !value && 'Max user must be greater than 0',
     },
   });
 
@@ -47,7 +47,7 @@ export default function LicenseForm({ value, onSubmitted, companyId, productCode
 
   const handleSubmit = async (license: License) => {
     setLoading(true);
-    const t = !!value?.id ? 'update' : 'create';
+    const t = !!value ? 'update' : 'create';
     try {
       const body = { ...license };
 
@@ -71,7 +71,7 @@ export default function LicenseForm({ value, onSubmitted, companyId, productCode
       }
 
       const res = await fetcher<Res<License>>(`/api/v1/license/${value?.id || ''}`, {
-        method: !!value?.id ? 'PUT' : 'POST',
+        method: !!value ? 'PUT' : 'POST',
         body,
       });
 
@@ -119,16 +119,28 @@ export default function LicenseForm({ value, onSubmitted, companyId, productCode
         <NumberInput w="100%" label="Max User" min={1} {...getInputProps('maxUser')} />
         <div>
           <Checkbox
+            disabled={!!value}
             checked={isSubscribe}
             label="Cloud Subscription"
             onChange={(r) => setIsSubscribe(r.currentTarget.checked)}
           />
           {isSubscribe && (
-            <DateRangePicker mt={4} w="100%" label="Subscription Period" value={subsRange} onChange={setSubsRange} />
+            <DateRangePicker
+              mt={4}
+              w="100%"
+              value={subsRange}
+              disabled={!!value}
+              clearable={!value}
+              onChange={setSubsRange}
+              label="Subscription Period"
+            />
           )}
         </div>
         <Space />
-        <Button disabled={isSubscribe && (!subsRange[0] || !subsRange[1])} loading={loading} type="submit">
+        <Button
+          disabled={(value && !isTouched()) || (isSubscribe && (!subsRange[0] || !subsRange[1]))}
+          loading={loading}
+          type="submit">
           Submit
         </Button>
       </Stack>

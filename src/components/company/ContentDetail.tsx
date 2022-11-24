@@ -28,9 +28,8 @@ export default function ContentDetail({ data }: Props) {
   };
 
   return (
-    <Stack>
+    <Stack spacing={24}>
       <Title order={1}>{company.name}</Title>
-      <Space h={32} />
       <Flex gap={32} direction={{ base: 'column', lg: 'row' }}>
         <Flex w={{ base: '100%', lg: '30%' }} gap={12} direction="column">
           <Title order={3}>Company Details</Title>
@@ -46,7 +45,7 @@ export default function ContentDetail({ data }: Props) {
               <Title order={3}>Company Licenses</Title>
               {isSales && (
                 <Button leftIcon={<IconCertificate2 />} onClick={handler.open}>
-                  Publish License
+                  New License
                 </Button>
               )}
             </Flex>
@@ -55,7 +54,7 @@ export default function ContentDetail({ data }: Props) {
         </Flex>
       </Flex>
       {isSales && (
-        <Modal opened={opened} onClose={handler.close} title={`Publish License for ${company.name}`}>
+        <Modal opened={opened} onClose={handler.close} title={`Request License for ${company.name}`}>
           <LicenseForm companyId={company.id} onSubmitted={handleLicenseFormClose} />
         </Modal>
       )}
@@ -67,6 +66,7 @@ const cols = [
   {
     key: 'key',
     title: 'License Key',
+    render: (val?: string) => val || <i style={{ opacity: 0.5 }}>(pending approval)</i>,
   },
   {
     key: 'product',

@@ -2,38 +2,57 @@ import fetcher from 'libs/fetcher';
 
 import useSWR from 'swr';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useViewportSize } from '@mantine/hooks';
-import { useAuth } from 'components/AuthContext';
 
+import LicenseForm from './LicenseForm';
+import ExtendLicense from './ExtendLicense';
+import { IconSquarePlus, IconEdit } from '@tabler/icons';
 import { AutoTable, CompanySelect } from 'components/reusable';
-import { Center, Flex, Pagination, Group, Select, Stack, Title } from '@mantine/core';
+import { Center, Flex, Pagination, Group, Select, Stack, Title, ActionIcon, Modal } from '@mantine/core';
 
 export default function LicenseTable() {
+  const { push } = useRouter();
   const { width } = useViewportSize();
-  const { checkRole } = useAuth();
-  const { push, replace } = useRouter();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('' as License['type']);
 
-  const { data } = useSWR<Res<User[]>>(
+  const [isExtend, setIsExtend] = useState(false);
+  const [license, setLicense] = useState<Partial<License> | null>(null);
+
+  const { data, mutate } = useSWR<Res<User[]>>(
     `/api/v1/license?page=${page}&companyId=${search || ''}&type=${type}:equals`,
     fetcher
   );
 
-  const isEligible = checkRole('SUPPORT');
+  const renderedColumn = useMemo(() => {
+    const cols = [...columns];
 
-  useEffect(() => {
-    if (!isEligible) replace('/dashboard');
-  }, [isEligible, replace]);
+    cols.push({
+      key: 'id',
+      title: 'Action',
+      render: (_: any, row: License) => (
+        <Group noWrap spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
+          <ActionIcon color="blue" onClick={() => setLicense(row)}>
+            <IconEdit size={16} stroke={1.5} />
+          </ActionIcon>
+          {row.type === 'CLOUD' && row.key && (
+            <ActionIcon color="blue" onClick={() => (setLicense(row), setIsExtend(true))}>
+              <IconSquarePlus size={16} stroke={1.5} />
+            </ActionIcon>
+          )}
+        </Group>
+      ),
+    } as any);
 
-  if (!isEligible) return null;
+    return cols;
+  }, []);
 
   return (
     <Stack spacing={32}>
-      <Title order={1}>Manage Company</Title>
+      <Title order={1}>Manage License</Title>
       <Stack spacing={16}>
         <Flex gap={12} direction={{ base: 'column', xs: 'initial' }} justify="space-between">
           <Group spacing={8} position="left" noWrap>
@@ -53,8 +72,8 @@ export default function LicenseTable() {
         </Flex>
         <AutoTable
           highlightOnHover
-          columns={columns}
           data={data?.result}
+          columns={renderedColumn}
           useScroll={width <= 768}
           onClick={(row) => push(`/dashboard/license/${row.id}`)}
         />
@@ -64,6 +83,16 @@ export default function LicenseTable() {
           </Center>
         )}
       </Stack>
+      <Modal
+        opened={!!license}
+        title={isExtend ? 'Extend License' : 'Edit License'}
+        onClose={() => (setLicense(null), setIsExtend(false))}>
+        {isExtend ? (
+          <ExtendLicense data={license} onSubmitted={() => (setLicense(null), mutate())} />
+        ) : (
+          <LicenseForm value={license} onSubmitted={() => (setLicense(null), mutate())} />
+        )}
+      </Modal>
     </Stack>
   );
 }
@@ -77,6 +106,7 @@ const columns = [
   {
     key: 'key',
     title: 'License Key',
+    render: (val?: string) => val || <i style={{ opacity: 0.5 }}>(pending approval)</i>,
   },
   {
     key: 'product',

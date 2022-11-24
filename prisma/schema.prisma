@@ -75,11 +75,12 @@ model Product {
 
 model License {
   id                String      @id @default(cuid())
-  key               String      @unique
+  key               String?     @unique
   type              LicenseType
   maxUser           Int         @default(1)
   subscriptionStart DateTime    @default(now())
   subscriptionEnd   DateTime?
+  referenceId       String?     @unique
 
   productCode String
   product     Product @relation(fields: [productCode], references: [code])
