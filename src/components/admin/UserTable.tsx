@@ -6,7 +6,7 @@ import { useDebouncedState } from '@mantine/hooks';
 import UserModal from './UserModal';
 import { AutoTable } from 'components/reusable';
 import { showNotification } from '@mantine/notifications';
-import { Stack, Button, Center, Chip, Flex, Group, Input, Pagination, Select } from '@mantine/core';
+import { Stack, Button, Center, Chip, Flex, Group, Input, Pagination, Select, Card } from '@mantine/core';
 
 export default function UserTable() {
   const [page, setPage] = useState(1);
@@ -47,12 +47,14 @@ export default function UserTable() {
           <Button w={{ base: '100%', sm: 'auto' }}>Create User</Button>
         </UserModal>
       </Flex>
-      <AutoTable highlightOnHover columns={columns(updateUser)} data={data?.result} isLoading={isValidating} />
-      {data && !!data.result.length && (
-        <Center>
-          <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
-        </Center>
-      )}
+      <Card shadow="sm" radius="md">
+        <AutoTable highlightOnHover columns={columns(updateUser)} data={data?.result} isLoading={isValidating} />
+        {data && !!data.result.length && (
+          <Center my={8}>
+            <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
+          </Center>
+        )}
+      </Card>
     </Stack>
   );
 }

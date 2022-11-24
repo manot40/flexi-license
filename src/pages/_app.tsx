@@ -31,4 +31,7 @@ const publicSans = Public_Sans({ subsets: ['latin'] });
 const theme: MantineThemeOverride = {
   colorScheme: 'light',
   fontFamily: publicSans.style.fontFamily,
+  globalStyles: (theme) => ({
+    body: { backgroundColor: theme.colorScheme === 'dark' ? '#1A1B1E' : theme.colors.gray[0] },
+  }),
 };

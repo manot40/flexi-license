@@ -6,10 +6,10 @@ import { useMemo, useState } from 'react';
 import { useAuth } from 'components/AuthContext';
 import { useDebouncedState, useViewportSize } from '@mantine/hooks';
 
-import { IconTrash, IconEdit } from '@tabler/icons';
-import { AutoTable, ConfirmPop } from 'components/reusable';
+import { IconEdit } from '@tabler/icons';
+import { AutoTable } from 'components/reusable';
 import CompanyForm, { defaultCompanyData } from './CompanyForm';
-import { Flex, Input, Group, Modal, Title, Stack, Button, Center, Pagination, ActionIcon } from '@mantine/core';
+import { Flex, Card, Input, Group, Modal, Title, Stack, Button, Center, Pagination, ActionIcon } from '@mantine/core';
 
 export default function ContentIndex() {
   const { push } = useRouter();
@@ -54,28 +54,30 @@ export default function ContentIndex() {
           <CompanyForm value={company!} onSubmitted={() => (mutate(), setCompany(null))} />
         </Modal>
       )}
-      <Stack spacing={16}>
-        <Flex gap={12} direction={{ base: 'column-reverse', xs: 'initial' }} justify="space-between">
-          <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
-          {isSales && (
-            <Group spacing={6} position="right">
-              <Button onClick={() => setCompany(defaultCompanyData)}>New Company</Button>
-            </Group>
+      <Card shadow="sm" radius="md" p="lg">
+        <Stack spacing={16}>
+          <Flex gap={12} direction={{ base: 'column-reverse', xs: 'initial' }} justify="space-between">
+            <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
+            {isSales && (
+              <Group spacing={6} position="right">
+                <Button onClick={() => setCompany(defaultCompanyData)}>New Company</Button>
+              </Group>
+            )}
+          </Flex>
+          <AutoTable
+            highlightOnHover
+            data={data?.result}
+            useScroll={width <= 768}
+            columns={renderedColumn}
+            onClick={(row) => push(`/dashboard/company/${row.id}`)}
+          />
+          {data && !!data.result.length && (
+            <Center>
+              <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
+            </Center>
           )}
-        </Flex>
-        <AutoTable
-          highlightOnHover
-          data={data?.result}
-          useScroll={width <= 768}
-          columns={renderedColumn}
-          onClick={(row) => push(`/dashboard/company/${row.id}`)}
-        />
-        {data && !!data.result.length && (
-          <Center>
-            <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
-          </Center>
-        )}
-      </Stack>
+        </Stack>
+      </Card>
     </Stack>
   );
 }

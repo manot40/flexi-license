@@ -1,7 +1,6 @@
 import fetcher from 'libs/fetcher';
 
 import useSWR from 'swr';
-import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { useViewportSize } from '@mantine/hooks';
 
@@ -9,10 +8,9 @@ import LicenseForm from './LicenseForm';
 import ExtendLicense from './ExtendLicense';
 import { IconSquarePlus, IconEdit } from '@tabler/icons';
 import { AutoTable, CompanySelect } from 'components/reusable';
-import { Center, Flex, Pagination, Group, Select, Stack, Title, ActionIcon, Modal } from '@mantine/core';
+import { Center, Flex, Pagination, Group, Select, Stack, Title, ActionIcon, Modal, Card } from '@mantine/core';
 
 export default function LicenseTable() {
-  const { push } = useRouter();
   const { width } = useViewportSize();
 
   const [page, setPage] = useState(1);
@@ -53,36 +51,32 @@ export default function LicenseTable() {
   return (
     <Stack spacing={32}>
       <Title order={1}>Manage License</Title>
-      <Stack spacing={16}>
-        <Flex gap={12} direction={{ base: 'column', xs: 'initial' }} justify="space-between">
-          <Group spacing={8} position="left" noWrap>
-            <CompanySelect
-              allowDeselect
-              onChange={setSearch}
-              placeholder="Search by company"
-              w={{ base: '100%', sm: 'auto' }}
-            />
-            <Select
-              defaultValue=""
-              sx={{ width: '10rem' }}
-              onChange={(v) => setType(v as any)}
-              data={[{ value: '', label: 'All Type' }, ...typeSelectData]}
-            />
-          </Group>
-        </Flex>
-        <AutoTable
-          highlightOnHover
-          data={data?.result}
-          columns={renderedColumn}
-          useScroll={width <= 768}
-          onClick={(row) => push(`/dashboard/license/${row.id}`)}
-        />
-        {data && !!data.result.length && (
-          <Center>
-            <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
-          </Center>
-        )}
-      </Stack>
+      <Card shadow="sm" radius="md" p="lg">
+        <Stack spacing={16}>
+          <Flex gap={12} direction={{ base: 'column', xs: 'initial' }} justify="space-between">
+            <Group spacing={8} position="left" noWrap>
+              <CompanySelect
+                allowDeselect
+                onChange={setSearch}
+                placeholder="Search by company"
+                w={{ base: '100%', sm: 'auto' }}
+              />
+              <Select
+                defaultValue=""
+                sx={{ width: '10rem' }}
+                onChange={(v) => setType(v as any)}
+                data={[{ value: '', label: 'All Type' }, ...typeSelectData]}
+              />
+            </Group>
+          </Flex>
+          <AutoTable highlightOnHover data={data?.result} columns={renderedColumn} useScroll={width <= 768} />
+          {data && !!data.result.length && (
+            <Center>
+              <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
+            </Center>
+          )}
+        </Stack>
+      </Card>
       <Modal
         opened={!!license}
         title={isExtend ? 'Extend License' : 'Edit License'}
