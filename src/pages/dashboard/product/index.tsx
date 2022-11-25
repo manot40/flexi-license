@@ -7,7 +7,6 @@ import { getAuthUser } from 'middleware/requireAuth';
 import Content from 'components/product/ContentIndex';
 
 export default function ProductIndex({ fallback }: { fallback: Res<Product[]> }) {
-  console.log(fallback);
   return (
     <SWRConfig value={{ fallback }}>
       <Content />
