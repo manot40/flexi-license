@@ -45,7 +45,7 @@ export default function ContentDetail({ data }: Props) {
           <Flex justify="space-between">
             <Title order={3}>Company Licenses</Title>
             {isSales && (
-              <Button leftIcon={<IconCertificate2 />} onClick={handler.open}>
+              <Button leftIcon={<IconCertificate2 size={20} />} onClick={handler.open}>
                 New License
               </Button>
             )}

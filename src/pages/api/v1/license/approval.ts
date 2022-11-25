@@ -2,31 +2,23 @@ import errorHandler from 'libs/errorHandler';
 
 import requireAuth, { type CtxWithUser } from 'middleware/requireAuth';
 
-import validator, { createLicense } from 'validator';
-
 import { license } from 'services';
 
 const handler: CtxWithUser = async (req, res) => {
   try {
-    const referenceId = req.query.id as string;
-
     switch (req.method) {
-      case 'PATCH': {
-        const key = req.body.key;
+      case 'POST': {
+        const { company, product, key } = req.body;
 
-        if (typeof key !== 'string' || key.length < 1)
+        if (!company || !product || !key)
           return res.status(400).json({
             success: false,
-            message: 'No valid license key provided',
+            message: 'No valid license key, company name, or product code provided',
           });
 
-        const result = await license.approveLicense({ referenceId, key });
+        const { result, error } = await license.approveLicense({ company, product, key });
 
-        if (!result)
-          return res.status(400).json({
-            success: false,
-            message: 'Failed to approve license, please make sure the referenceId is correct',
-          });
+        if (!result) return res.status(400).json({ success: false, message: error });
 
         return res.status(200).json({ success: true, message: 'OK' });
       }

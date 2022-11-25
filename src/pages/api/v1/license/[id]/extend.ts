@@ -35,5 +35,5 @@ const handler: CtxWithUser = async (req, res) => {
 };
 
 export default requireAuth(handler, {
-  rule: [{ method: '.*', role: ['ADMIN'] }],
+  rule: [{ method: '.*', role: ['ADMIN', 'SUPPORT'] }],
 });

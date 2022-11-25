@@ -115,16 +115,25 @@ export async function update({ id, body, user }: CreateUpdateParams<License>) {
   return { result };
 }
 
-export async function approveLicense({ referenceId, key }: { referenceId: string; key: string }) {
+export async function approveLicense({ company, product, key }: { company: string; product: string; key: string }) {
   try {
+    const { id } =
+      (await db.license.findFirst({
+        orderBy: { updatedAt: 'desc' },
+        where: { AND: [{ company: { name: company } }, { productCode: product }, { referenceId: { not: null } }] },
+      })) || {};
+
+    if (!id) return { error: 'Failed to approve license, please make sure sent data is correct' };
+
     const result = await db.license.update({
-      where: { referenceId },
-      data: { key },
+      where: { id },
+      data: { key, referenceId: null },
     });
-    return result;
+
+    return { result };
   } catch (err: any) {
     console.error(err.message);
-    return null;
+    return { error: 'Internal Server Error' };
   }
 }
 

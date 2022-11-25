@@ -6,16 +6,31 @@ import { useMemo, useState } from 'react';
 import { useAuth } from 'components/AuthContext';
 import { useDebouncedState, useViewportSize } from '@mantine/hooks';
 
-import { IconEdit } from '@tabler/icons';
+import { IconCertificate2, IconEdit } from '@tabler/icons';
 import { AutoTable } from 'components/reusable';
 import CompanyForm, { defaultCompanyData } from './CompanyForm';
-import { Flex, Card, Input, Group, Modal, Title, Stack, Button, Center, Pagination, ActionIcon } from '@mantine/core';
+import {
+  Flex,
+  Card,
+  Input,
+  Group,
+  Modal,
+  Title,
+  Stack,
+  Button,
+  Center,
+  Pagination,
+  ActionIcon,
+  Tooltip,
+} from '@mantine/core';
+import { LicenseForm } from 'components/license';
 
 export default function ContentIndex() {
   const { push, query } = useRouter();
   const { width } = useViewportSize();
   const { checkRole } = useAuth();
 
+  const [isLicense, setIsLicense] = useState(false);
   const [page, setPage] = useState(+(query.page || 1));
   const [search, setSearch] = useDebouncedState(query.name || '', 300);
   const [company, setCompany] = useState<Partial<Company> | null>(null);
@@ -48,18 +63,27 @@ export default function ContentIndex() {
       <Title order={1}>Manage Company</Title>
       {isSales && (
         <Modal
-          opened={!!company}
-          onClose={() => setCompany(null)}
-          title={!!company?.id ? `Edit ${company.name} data` : 'Create New Company'}>
-          <CompanyForm value={company!} onSubmitted={() => (mutate(), setCompany(null))} />
+          opened={!!company || isLicense}
+          onClose={() => (setCompany(null), setIsLicense(false))}
+          title={!!company?.id ? `Edit ${company.name} data` : `Create New ${isLicense ? 'License' : 'Company'}`}>
+          {isLicense ? (
+            <LicenseForm onSubmitted={() => setIsLicense(false)} />
+          ) : (
+            <CompanyForm value={company!} onSubmitted={() => (mutate(), setCompany(null))} />
+          )}
         </Modal>
       )}
       <Card shadow="sm" radius="md" p="lg">
         <Stack spacing={16}>
-          <Flex gap={12} direction={{ base: 'column-reverse', xs: 'initial' }} justify="space-between">
+          <Flex gap={12} direction={{ base: 'column', xs: 'initial' }} justify="space-between">
             <Input onChange={({ target }) => setSearch(target.value)} placeholder="Search by name" />
             {isSales && (
-              <Group spacing={6} position="right">
+              <Group spacing={8} position="right" noWrap>
+                <Tooltip withArrow label="Request License">
+                  <Button variant="subtle" onClick={() => setIsLicense(true)}>
+                    <IconCertificate2 stroke={1.66} />
+                  </Button>
+                </Tooltip>
                 <Button onClick={() => setCompany(defaultCompanyData)}>New Company</Button>
               </Group>
             )}

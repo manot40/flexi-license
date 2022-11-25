@@ -3,22 +3,25 @@ import fetcher from 'libs/fetcher';
 import useSWR from 'swr';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
+import { useAuth } from 'components/AuthContext';
 import { useViewportSize } from '@mantine/hooks';
 
 import LicenseForm from './LicenseForm';
 import ExtendLicense from './ExtendLicense';
-import { IconSquarePlus, IconEdit } from '@tabler/icons';
 import { AutoTable, CompanySelect } from 'components/reusable';
-import { Center, Flex, Pagination, Group, Select, Stack, Title, ActionIcon, Modal, Card } from '@mantine/core';
+import { IconSquarePlus, IconEdit, IconCertificate2 } from '@tabler/icons';
+import { Center, Flex, Pagination, Group, Select, Stack, Title, ActionIcon, Modal, Card, Button } from '@mantine/core';
 
 export default function LicenseTable() {
   const { query } = useRouter();
+  const { checkRole } = useAuth();
   const { width } = useViewportSize();
 
   const [page, setPage] = useState(+(query.page || 1));
   const [type, setType] = useState((query.type || '') as License['type']);
   const [search, setSearch] = useState(query.companyId || '');
 
+  const [isCreate, setIsCreate] = useState(false);
   const [isExtend, setIsExtend] = useState(false);
   const [license, setLicense] = useState<Partial<License> | null>(null);
 
@@ -70,6 +73,9 @@ export default function LicenseTable() {
                 data={[{ value: '', label: 'All Type' }, ...typeSelectData]}
               />
             </Group>
+            <Button leftIcon={<IconCertificate2 size={20} />} onClick={() => setIsCreate(true)}>
+              New License
+            </Button>
           </Flex>
           <AutoTable highlightOnHover data={data?.result} columns={renderedColumn} useScroll={width <= 768} />
           {data && !!data.result.length && (
@@ -80,9 +86,9 @@ export default function LicenseTable() {
         </Stack>
       </Card>
       <Modal
-        opened={!!license}
-        title={isExtend ? 'Extend License' : 'Edit License'}
-        onClose={() => (setLicense(null), setIsExtend(false))}>
+        opened={!!license || (isCreate && checkRole('ADMIN'))}
+        onClose={() => (setLicense(null), setIsExtend(false), setIsCreate(false))}
+        title={isExtend ? 'Extend License' : `${isCreate ? 'Request New' : 'Edit'} License`}>
         {isExtend ? (
           <ExtendLicense data={license} onSubmitted={() => (setLicense(null), mutate())} />
         ) : (
