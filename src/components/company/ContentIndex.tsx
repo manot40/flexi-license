@@ -12,12 +12,12 @@ import CompanyForm, { defaultCompanyData } from './CompanyForm';
 import { Flex, Card, Input, Group, Modal, Title, Stack, Button, Center, Pagination, ActionIcon } from '@mantine/core';
 
 export default function ContentIndex() {
-  const { push } = useRouter();
+  const { push, query } = useRouter();
   const { width } = useViewportSize();
   const { checkRole } = useAuth();
 
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useDebouncedState('', 300);
+  const [page, setPage] = useState(+(query.page || 1));
+  const [search, setSearch] = useDebouncedState(query.name || '', 300);
   const [company, setCompany] = useState<Partial<Company> | null>(null);
 
   const { data, mutate } = useSWR<Res<User[]>>(`/api/v1/company?page=${page}&name=${search}`, fetcher);

@@ -1,6 +1,7 @@
 import fetcher from 'libs/fetcher';
 
 import useSWR from 'swr';
+import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { useViewportSize } from '@mantine/hooks';
 
@@ -11,11 +12,12 @@ import { AutoTable, CompanySelect } from 'components/reusable';
 import { Center, Flex, Pagination, Group, Select, Stack, Title, ActionIcon, Modal, Card } from '@mantine/core';
 
 export default function LicenseTable() {
+  const { query } = useRouter();
   const { width } = useViewportSize();
 
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [type, setType] = useState('' as License['type']);
+  const [page, setPage] = useState(+(query.page || 1));
+  const [type, setType] = useState((query.type || '') as License['type']);
+  const [search, setSearch] = useState(query.companyId || '');
 
   const [isExtend, setIsExtend] = useState(false);
   const [license, setLicense] = useState<Partial<License> | null>(null);
@@ -62,7 +64,7 @@ export default function LicenseTable() {
                 w={{ base: '100%', sm: 'auto' }}
               />
               <Select
-                defaultValue=""
+                value={type}
                 sx={{ width: '10rem' }}
                 onChange={(v) => setType(v as any)}
                 data={[{ value: '', label: 'All Type' }, ...typeSelectData]}

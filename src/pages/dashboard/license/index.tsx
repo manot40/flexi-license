@@ -17,7 +17,7 @@ export default function LicenseIndex({ fallback }: { fallback: Res<License[]> })
 export const getServerSideProps: GetServerSideProps = async ({ req, res, query }) => {
   const user = await getAuthUser(req);
 
-  const reqUrl = `/api/v1/license?page=${query.page || 1}&companyId=${query.search || ''}&type=${
+  const reqUrl = `/api/v1/license?page=${query.page || 1}&companyId=${query.companyId || ''}&type=${
     query.type || ''
   }:equals`;
 
@@ -29,7 +29,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, query }
     res.end();
   }
 
-  const { paginate, result } = await license.getMany(query);
+  const _query = { ...query };
+  _query.type && (_query.type = `${_query.type}:equals`);
+
+  const { paginate, result } = await license.getMany(_query).catch(() => ({ paginate: null, result: [] }));
 
   return {
     props: {

@@ -10,19 +10,21 @@ import AuthProvider from 'components/AuthContext';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <AuthProvider>
+    <>
       <Head>
         <title>Flexi License</title>
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
-      <MantineProvider withGlobalStyles withNormalizeCSS theme={theme}>
-        <NotificationsProvider>
-          <AppLayout>
-            <Component {...pageProps} />
-          </AppLayout>
-        </NotificationsProvider>
-      </MantineProvider>
-    </AuthProvider>
+      <AuthProvider>
+        <MantineProvider withGlobalStyles withNormalizeCSS theme={theme}>
+          <NotificationsProvider>
+            <AppLayout>
+              <Component {...pageProps} />
+            </AppLayout>
+          </NotificationsProvider>
+        </MantineProvider>
+      </AuthProvider>
+    </>
   );
 }
 
@@ -32,6 +34,6 @@ const theme: MantineThemeOverride = {
   colorScheme: 'light',
   fontFamily: publicSans.style.fontFamily,
   globalStyles: (theme) => ({
-    body: { backgroundColor: theme.colorScheme === 'dark' ? '#1A1B1E' : theme.colors.gray[0] },
+    body: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0] },
   }),
 };

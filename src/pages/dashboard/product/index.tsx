@@ -28,7 +28,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res, query }
     res.end();
   }
 
-  const { paginate, result } = await product.getMany(query);
+  const _query = { ...query };
+  _query.isActive && (_query.isActive = `${_query.isActive}:equals`);
+
+  const { paginate, result } = await product.getMany(_query).catch(() => ({ paginate: null, result: [] }));
 
   return {
     props: {

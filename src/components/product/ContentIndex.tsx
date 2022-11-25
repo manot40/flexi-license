@@ -27,13 +27,13 @@ import {
 } from '@mantine/core';
 
 export default function ContentIndex() {
-  const { push } = useRouter();
+  const { push, query } = useRouter();
   const { width } = useViewportSize();
   const { checkRole } = useAuth();
 
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState('');
-  const [search, setSearch] = useDebouncedState('', 300);
+  const [page, setPage] = useState(+(query.page || 1));
+  const [status, setStatus] = useState((query.isActive as string) || '');
+  const [search, setSearch] = useDebouncedState(query.name || '', 300);
   const [product, setProduct] = useState<Partial<Product> | null>(null);
 
   const { data, mutate } = useSWR<Res<User[]>>(
@@ -83,7 +83,7 @@ export default function ContentIndex() {
                 onChange={({ target }) => setSearch(target.value)}
               />
               <Select
-                defaultValue=""
+                value={status}
                 sx={{ width: '10rem' }}
                 onChange={(v) => setStatus(v!)}
                 data={[{ value: '', label: 'All Type' }, ...statusSelectData]}
