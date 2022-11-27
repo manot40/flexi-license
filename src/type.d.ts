@@ -31,6 +31,8 @@ declare type Company = import('@prisma/client').Company;
 
 declare type Product = import('@prisma/client').Product;
 
+declare type ApiToken = import('@prisma/client').ApiToken;
+
 declare type LicenseWithCompany = License & { company: Company };
 
 declare type LicenseReqFlow = {

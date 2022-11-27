@@ -4,7 +4,7 @@ import { Button, Flex, Popover, Stack, Text } from '@mantine/core';
 type ConfirmPopProps = {
   color?: string;
   confirmText?: string;
-  onConfirm: () => void;
+  onConfirm?: () => void;
 } & React.ComponentPropsWithoutRef<typeof Popover>;
 
 export default function ConfirmPop({ confirmText, onConfirm, children, color, ...restProps }: ConfirmPopProps) {
@@ -17,7 +17,7 @@ export default function ConfirmPop({ confirmText, onConfirm, children, color, ..
         <Stack>
           <Text align="center">{confirmText || 'Are you sure?'}</Text>
           <Flex gap={12}>
-            <Button color={color} onClick={() => (setOpened(false), onConfirm())}>
+            <Button color={color} onClick={() => (setOpened(false), onConfirm?.())}>
               Confirm
             </Button>
             <Button color={color} onClick={() => setOpened(false)} variant="outline">

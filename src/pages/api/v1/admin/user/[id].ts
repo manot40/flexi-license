@@ -1,4 +1,5 @@
 import db from 'libs/db';
+import bcrypt from 'bcryptjs';
 import errorHandler from 'libs/errorHandler';
 import QueryHelper, { parseBody } from 'libs/queryHelper';
 
@@ -58,7 +59,18 @@ const handler: CtxWithUser = async (req, res) => {
       }
 
       case 'PATCH': {
-        const { password, ...data } = parseBody(req.body, ['role', 'isActive'] as (keyof User)[]);
+        const data = parseBody(req.body, ['role', 'isActive', 'password'] as (keyof User)[]);
+
+        if (typeof data.password == 'string') {
+          // const { password } = (await db.user.findUnique({ where: { id } })) || {};
+          // if (!password) return res.status(404).json({ success: false, message: 'User not found' });
+
+          // const isMatch = await bcrypt.compare(data.password.trim(), password);
+          // if (!isMatch)
+          //   return res.status(400).json({ success: false, message: "Old password doesn't match our record" });
+
+          data.password = await bcrypt.hash(data.password, 10);
+        }
 
         const result = await db.user.update({ where: { id }, data });
 

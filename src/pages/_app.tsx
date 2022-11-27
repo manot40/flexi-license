@@ -1,12 +1,9 @@
 import type { AppProps } from 'next/app';
 
 import Head from 'next/head';
-import { Public_Sans } from '@next/font/google';
-import { NotificationsProvider } from '@mantine/notifications';
-import { MantineProvider, type MantineThemeOverride } from '@mantine/core';
 
 import AppLayout from 'layouts/AppLayout';
-import AuthProvider from 'components/AuthContext';
+import Providers from 'components/Providers';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -15,25 +12,11 @@ export default function App({ Component, pageProps }: AppProps) {
         <title>Flexi License</title>
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
-      <AuthProvider>
-        <MantineProvider withGlobalStyles withNormalizeCSS theme={theme}>
-          <NotificationsProvider>
-            <AppLayout>
-              <Component {...pageProps} />
-            </AppLayout>
-          </NotificationsProvider>
-        </MantineProvider>
-      </AuthProvider>
+      <Providers>
+        <AppLayout>
+          <Component {...pageProps} />
+        </AppLayout>
+      </Providers>
     </>
   );
 }
-
-const publicSans = Public_Sans({ subsets: ['latin'] });
-
-const theme: MantineThemeOverride = {
-  colorScheme: 'light',
-  fontFamily: publicSans.style.fontFamily,
-  globalStyles: (theme) => ({
-    body: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[0] },
-  }),
-};

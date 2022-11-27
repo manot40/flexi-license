@@ -118,18 +118,18 @@ const columns = [
   {
     key: 'contactNumber',
     title: 'Contact Number',
-    width: 160,
+    style: { width: 160 },
   },
   {
     key: 'updatedAt',
     title: 'Last Update',
-    width: 180,
+    style: { width: 180 },
     render: (cell: string) =>
       Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
   },
   {
     key: 'updatedBy',
     title: 'Updated By',
-    width: 120,
+    style: { width: 120 },
   },
 ];

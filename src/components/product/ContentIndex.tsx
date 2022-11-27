@@ -128,19 +128,19 @@ const columns = [
   {
     key: 'updatedAt',
     title: 'Last Update',
-    width: 180,
+    style: { width: 180 },
     render: (cell: string) =>
       Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
   },
   {
     key: 'updatedBy',
     title: 'Updated By',
-    width: 120,
+    style: { width: 120 },
   },
   {
     key: 'isActive',
     title: 'Status',
-    width: 80,
+    style: { width: 80 },
     render: (cell: boolean) => (cell ? 'Active' : 'Inactive'),
   },
 ];

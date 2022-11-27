@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from 'components/AuthContext';
 
-import { UserTable } from 'components/admin';
+import { UserTable, ApitokenTable } from 'components/admin';
 import { Stack, Tabs, Title } from '@mantine/core';
 
 export default function Users() {
@@ -30,8 +30,8 @@ export default function Users() {
           <UserTable />
         </Tabs.Panel>
 
-        <Tabs.Panel value="apiTokens" pt="xs">
-          TODO: API token Management
+        <Tabs.Panel value="apiTokens" pt="lg">
+          <ApitokenTable />
         </Tabs.Panel>
       </Tabs>
     </Stack>

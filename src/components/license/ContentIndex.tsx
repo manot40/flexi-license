@@ -130,14 +130,14 @@ const columns = [
   {
     key: 'subscriptionStart',
     title: 'Subscription Start',
-    width: 180,
+    style: { width: 180 },
     render: (cell: string) =>
       Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
   },
   {
     key: 'subscriptionEnd',
     title: 'Subscription End',
-    width: 180,
+    style: { width: 180 },
     render: (cell: string) =>
       cell ? (
         Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell))
@@ -149,13 +149,13 @@ const columns = [
   {
     key: 'updatedAt',
     title: 'Last Update',
-    width: 180,
+    style: { width: 180 },
     render: (cell: string) =>
       Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
   },
   {
     key: 'updatedBy',
     title: 'Updated By',
-    width: 120,
+    style: { width: 120 },
   },
 ];

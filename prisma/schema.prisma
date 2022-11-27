@@ -20,6 +20,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  ApiToken ApiToken[]
+
   CreatedLicense License[] @relation("CreatedLicense")
   UpdatedLicense License[] @relation("UpdatedLicense")
   CreatedCompany Company[] @relation("CreatedCompany")
@@ -95,6 +97,20 @@ model License {
   UpdatedBy User     @relation("UpdatedLicense", fields: [updatedBy], references: [username])
 
   @@map("flexi_licenses")
+}
+
+model ApiToken {
+  id       String  @id @default(cuid())
+  token    String  @unique @db.VarChar(512)
+  username String
+  isActive Boolean @default(true)
+
+  user User @relation(fields: [username], references: [username])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("flexi_api_tokens")
 }
 
 enum LicenseType {
