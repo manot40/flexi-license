@@ -20,7 +20,7 @@ export type AuthOptions = {
 export type CtxWithUser = (req: NextReqWithUser, res: NextRes) => Promise<void>;
 
 export async function getAuthUser(req: { cookies: NextReq['cookies']; headers: NextReq['headers'] }) {
-  const accessToken = req.cookies.accessToken || req.headers.authorization?.replace(/bearer/i, '').trim();
+  const accessToken = req.cookies.accessToken || req.headers.authorization?.replace(/(bearer|")/gi, '').trim();
   if (!accessToken) return null;
 
   const user = await verify<NextReqWithUser['user']>(accessToken);
