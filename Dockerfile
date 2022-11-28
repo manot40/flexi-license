@@ -28,6 +28,7 @@ WORKDIR /app
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+RUN chown -R nextjs:nodejs /app
 
 # Arguments for the production build
 ENV NODE_ENV production
