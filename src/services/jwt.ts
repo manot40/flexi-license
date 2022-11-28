@@ -5,7 +5,14 @@ const te = new TextEncoder();
 const JWTSecretKey = process.env.NEXT_JWT_SECRET || 'supers3cret';
 const JWTExpiration = process.env.NEXT_JWT_EXPIRATION || '1d';
 
-export const Expiry = ms(JWTExpiration);
+export const Expiry = {
+  default: ms(JWTExpiration),
+  OneDay: ms('1d'),
+  OneWeek: ms('1w'),
+  OneMonth: ms('1m'),
+  OneYear: ms('1y'),
+  SixMonths: ms('180d'),
+};
 
 export const sign = (data: any, opts = {} as { iat?: number; exp?: number | null }) => {
   const signer = new SignJWT(data);

@@ -52,14 +52,14 @@ export default async function handler(req: NextReq, res: NextRes) {
       if (!isPasswordValid) return res.status(400).json({ success: false, message: 'Invalid username or password' });
 
       const { createdAt, updatedAt, password, ...user } = data;
-      const token = await sign(user);
+      const token = await sign(user, { exp: req.body.remember === true ? Expiry.OneMonth : undefined });
       setCookie('accessToken', token, {
         req,
         res,
         path: '/',
         httpOnly: true,
         sameSite: 'strict',
-        maxAge: Expiry,
+        maxAge: Expiry.default,
         secure: process.env.NODE_ENV === 'production',
       });
 

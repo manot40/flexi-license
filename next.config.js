@@ -7,6 +7,7 @@ const nextConfig = {
     emotion: true,
   },
   reactStrictMode: true,
+  output: 'standalone',
   swcMinify: true,
 };
 
