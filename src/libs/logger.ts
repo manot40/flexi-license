@@ -11,8 +11,6 @@ const logStream = rfs.createStream('access.log', {
 });
 
 export default function logger(req: NextApiRequest, user: User | null) {
-  logStream.write(`${dayjs().format('YYYY/MM/DD HH:mm:ss')} ${req.method} ${req.url} ${
-    user?.username || req.headers.authorization || 'anon'
-  } ${JSON.stringify(req.body).trim()}
+  logStream.write(`${dayjs().format('YYYY/MM/DD HH:mm:ss')} ${req.method} ${req.url} ${user?.username || 'guest'}
 `);
 }
