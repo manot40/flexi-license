@@ -10,7 +10,20 @@ import LicenseForm from './LicenseForm';
 import ExtendLicense from './ExtendLicense';
 import { AutoTable, CompanySelect } from 'components/reusable';
 import { IconSquarePlus, IconEdit, IconCertificate2 } from '@tabler/icons';
-import { Center, Flex, Pagination, Group, Select, Stack, Title, ActionIcon, Modal, Card, Button } from '@mantine/core';
+import {
+  Flex,
+  Card,
+  Group,
+  Stack,
+  Title,
+  Modal,
+  Center,
+  Select,
+  Button,
+  Pagination,
+  ActionIcon,
+  PasswordInput,
+} from '@mantine/core';
 
 export default function LicenseTable() {
   const { query } = useRouter();
@@ -108,7 +121,13 @@ const columns = [
   {
     key: 'key',
     title: 'License Key',
-    render: (val?: string) => val || <i style={{ opacity: 0.5 }}>(pending approval)</i>,
+    style: { minWidth: 200 },
+    render: (val?: string) =>
+      val ? (
+        <PasswordInput readOnly value={val} styles={{ input: { border: 0 } }} onFocus={(e) => e.target.select()} />
+      ) : (
+        <i style={{ opacity: 0.5 }}>(pending approval)</i>
+      ),
   },
   {
     key: 'product',

@@ -1,5 +1,6 @@
 import type { NextApiRequest as NextReq, NextApiResponse as NextRes } from 'next';
 
+import logger from 'libs/logger';
 import { apiToken } from 'services';
 import { verify } from 'services/jwt';
 
@@ -36,6 +37,8 @@ export async function getAuthUser(req: { cookies: NextReq['cookies']; headers: N
 export default function requireAuth(cb: CtxWithUser, options = {} as AuthOptions) {
   return async function handler(req: NextReqWithUser, res: NextRes) {
     const user = await getAuthUser(req);
+
+    logger(req, user);
 
     if (!user || !user.isActive)
       return res.status(401).json({

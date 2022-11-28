@@ -6,7 +6,7 @@ import { IconCertificate2 } from '@tabler/icons';
 import { LicenseForm } from 'components/license';
 import { CompanyForm } from 'components/company';
 import { AutoTable, Result } from 'components/reusable';
-import { Stack, Button, Flex, Modal, Space, Title, Card } from '@mantine/core';
+import { Stack, Button, Flex, Modal, Title, Card, PasswordInput } from '@mantine/core';
 
 type Props = {
   data?: Company & { licenses: License[] };
@@ -68,7 +68,13 @@ const cols = [
   {
     key: 'key',
     title: 'License Key',
-    render: (val?: string) => val || <i style={{ opacity: 0.5 }}>(pending approval)</i>,
+    style: { minWidth: 200 },
+    render: (val?: string) =>
+      val ? (
+        <PasswordInput readOnly value={val} styles={{ input: { border: 0 } }} onFocus={(e) => e.target.select()} />
+      ) : (
+        <i style={{ opacity: 0.5 }}>(pending approval)</i>
+      ),
   },
   {
     key: 'product',

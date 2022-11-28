@@ -77,7 +77,7 @@ model Product {
 
 model License {
   id                String      @id @default(cuid())
-  key               String?     @unique
+  key               String?     @unique(length: 2048) @db.Text
   type              LicenseType
   maxUser           Int         @default(1)
   subscriptionStart DateTime    @default(now())

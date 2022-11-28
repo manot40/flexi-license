@@ -9,7 +9,7 @@ export const Expiry = {
   default: ms(JWTExpiration),
   OneDay: ms('1d'),
   OneWeek: ms('1w'),
-  OneMonth: ms('1m'),
+  OneMonth: ms('30d'),
   OneYear: ms('1y'),
   SixMonths: ms('180d'),
 };
