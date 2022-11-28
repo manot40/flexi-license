@@ -171,7 +171,7 @@ export async function requestLicenseKey(data: License) {
         { name: 'type', value: data.type[0] + data.type.substring(1).toLowerCase() },
         { name: 'maxUser', value: data.maxUser + '' },
         { name: 'expiredDate', value: dayjs(data.subscriptionEnd).format('DD-MM-YYYY') },
-        { name: 'approval', value: data.updatedBy },
+        { name: 'approval', value: 'Romi' /*data.updatedBy*/ },
       ],
     })
   ).data;

@@ -12,6 +12,8 @@ WORKDIR /app
 
 COPY . .
 
+ENV NEXT_TELEMETRY_DISABLED 1
+
 ARG DATABASE_URL
 ENV DATABASE_URL $DATABASE_URL
 
@@ -53,6 +55,7 @@ ENV NEXT_FLEXI_API_PASS $NEXT_FLEXI_API_PASS
 COPY --from=builder /app/package.json package.json
 COPY --from=builder /app/package-lock.json package-lock.json
 
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.js next.config.js
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static .next/static
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/public public
