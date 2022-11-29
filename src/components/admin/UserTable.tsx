@@ -33,11 +33,12 @@ export default function UserTable() {
       } catch (err: any) {
         showNotification({ color: 'red', title: 'Failed to update user', message: err.message });
       } finally {
-        toggle();
+        modal && toggle();
         setChgPass('');
       }
     },
-    [mutate, toggle]
+    // eslint-disable-next-line
+    [mutate, modal]
   );
 
   const columns = useMemo(
@@ -103,12 +104,9 @@ export default function UserTable() {
         <Button w={{ base: '100%', sm: 'auto' }} onClick={toggle}>
           Create User
         </Button>
-        {/* <UserModal onSubmitted={() => mutate()}>
-          <Button w={{ base: '100%', sm: 'auto' }}>Create User</Button>
-        </UserModal> */}
       </Flex>
       <Card shadow="sm" radius="md">
-        <AutoTable highlightOnHover columns={columns} data={data?.result} isLoading={isValidating} />
+        <AutoTable columns={columns} data={data?.result} isLoading={isValidating} />
         {data && !!data.result.length && (
           <Center my={8}>
             <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />

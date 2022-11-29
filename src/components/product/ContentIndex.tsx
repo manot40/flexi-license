@@ -92,7 +92,6 @@ export default function ContentIndex() {
             {isAdmin && <Button onClick={() => setProduct(defaultProductData)}>New Product</Button>}
           </Flex>
           <AutoTable
-            highlightOnHover
             data={data?.result}
             useScroll={width <= 768}
             columns={renderedColumn}

@@ -90,7 +90,7 @@ export default function LicenseTable() {
               New License
             </Button>
           </Flex>
-          <AutoTable highlightOnHover data={data?.result} columns={renderedColumn} useScroll={width <= 768} />
+          <AutoTable data={data?.result} columns={renderedColumn} useScroll={width <= 768} />
           {data && !!data.result.length && (
             <Center>
               <Pagination page={page} onChange={setPage} total={data.paginate!.totalPage} />
