@@ -116,26 +116,27 @@ export default function LicenseForm({ value, onSubmitted, companyId, productCode
             <input type="hidden" value={companyId} />
           </>
         )}
+        <TextInput w="100%" label="Instance URL" {...getInputProps('instanceUrl')} />
         <NumberInput w="100%" label="Max User" min={1} {...getInputProps('maxUser')} />
-        <div>
-          <Checkbox
-            disabled={!!value}
-            checked={isSubscribe}
-            label="Cloud Subscription"
-            onChange={(r) => setIsSubscribe(r.currentTarget.checked)}
-          />
-          {isSubscribe && (
-            <DateRangePicker
-              mt={4}
-              w="100%"
-              value={subsRange}
-              disabled={!!value}
-              clearable={!value}
-              onChange={setSubsRange}
-              label="Subscription Period"
+        {!value && (
+          <div>
+            <Checkbox
+              checked={isSubscribe}
+              label="Cloud Subscription"
+              onChange={(r) => setIsSubscribe(r.currentTarget.checked)}
             />
-          )}
-        </div>
+            {isSubscribe && (
+              <DateRangePicker
+                mt={4}
+                w="100%"
+                value={subsRange}
+                clearable={!value}
+                onChange={setSubsRange}
+                label="Subscription Period"
+              />
+            )}
+          </div>
+        )}
         <Space />
         <Button
           disabled={(value && !isTouched()) || (isSubscribe && (!subsRange[0] || !subsRange[1]))}

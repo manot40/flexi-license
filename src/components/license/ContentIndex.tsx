@@ -164,17 +164,13 @@ const columns = [
         <i>(on-prem)</i>
       ),
   },
-
   {
     key: 'updatedAt',
     title: 'Last Update',
     style: { width: 180 },
-    render: (cell: string) =>
-      Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
-  },
-  {
-    key: 'updatedBy',
-    title: 'Updated By',
-    style: { width: 120 },
+    render: (cell: string, row: License) =>
+      `${Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell))} (${
+        row.updatedBy
+      })`,
   },
 ];

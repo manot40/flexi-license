@@ -5,6 +5,8 @@ import fetcher from 'libs/fetcher';
 import { Select } from '@mantine/core';
 
 type ProductSelect = {
+  url?: string;
+  hideCode?: boolean;
   fields?: (keyof Product)[];
   valueKey?: keyof Product;
   labelKey?: keyof Product;
@@ -13,7 +15,9 @@ type ProductSelect = {
 
 export default function ProductSelect({
   onChange,
-  fields = [],
+  hideCode,
+  url = '/api/v1/product',
+  fields = ['id', 'name', 'code'],
   searchable = true,
   valueKey = 'id',
   labelKey = 'name',
@@ -21,18 +25,15 @@ export default function ProductSelect({
   ...restProps
 }: ProductSelect) {
   const [search, setSearch] = useState('');
-  const { data } = useSWR<Res<Product[]>>(
-    `/api/v1/product?name=${search}&fields=${fields.join(',')}&order=name:asc`,
-    fetcher
-  );
+  const { data } = useSWR<Res<Product[]>>(`${url}?name=${search}&fields=${fields.join(',')}&order=name:asc`, fetcher);
 
   const product = useMemo(() => {
     if (!data) return [];
     return data.result.map((product) => ({
-      label: `${product[labelKey]} (${product.code})`,
+      label: product[labelKey] + (!hideCode ? ` (${product.code})` : ''),
       value: `${product[valueKey]}`,
     }));
-  }, [data, valueKey, labelKey]);
+  }, [data, valueKey, labelKey, hideCode]);
 
   return (
     <Select

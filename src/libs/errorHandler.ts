@@ -21,24 +21,23 @@ export default function errorHandler(err: any): ErrorResponse {
   if (err instanceof DBValidationErr) {
     res.code = 400;
     res.message = 'Validation error, please check your query data';
-    console.error(err.message);
   }
 
   if (err instanceof DBKnownReqErr || err instanceof DBUnknownReqErr) {
     res.code = 400;
     res.message = 'Server cannot processing your request';
-    console.error(err.message);
   }
 
   if (err instanceof DBFatalErr) {
     console.error('Fatal error occurred in the database engine');
-    console.error(err.message);
   }
 
   if (err instanceof AxiosError) {
     const { response: res } = err;
     console.error(res?.status, res?.data);
   }
+
+  console.error(err.message);
 
   return res;
 }

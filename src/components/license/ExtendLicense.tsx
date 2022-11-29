@@ -39,11 +39,13 @@ export default function ExtendLicense({ data, onSubmitted, ...restProps }: Props
     }
   };
 
+  const initDate = subsEnd.add(1).toDate();
+
   return (
     <Stack spacing={12} {...restProps}>
-      <TextInput disabled label="License Key" value={data?.key || '(pending approval)'} />
+      <TextInput disabled label="Product Code" value={data?.productCode} />
       <TextInput label="Subscription End" value={subsEnd.format('DD/MMM/YYYY')} readOnly />
-      <DatePicker minDate={subsEnd.add(1).toDate()} value={extend} onChange={setExtend} label="Extend to" />
+      <DatePicker initialMonth={initDate} minDate={initDate} value={extend} onChange={setExtend} label="Extend to" />
       <Button disabled={!data?.key} mt={18} loading={loading} onClick={handleExtend}>
         Extend License
       </Button>

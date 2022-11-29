@@ -40,9 +40,7 @@ const handler: CtxWithUser = async (req, res) => {
         const errMsg = await validator(updateLicense, req.body);
         if (errMsg) return res.status(400).json({ success: false, message: errMsg });
 
-        const { result, error } = await license.update({ id, body, user });
-
-        if (error) return res.status(400).json({ success: false, message: error });
+        const { result } = await license.update({ id, body, user });
 
         return res.status(200).json({
           success: true,

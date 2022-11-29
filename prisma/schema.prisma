@@ -80,6 +80,7 @@ model License {
   key               String?     @unique(length: 2048) @db.Text
   type              LicenseType
   maxUser           Int         @default(1)
+  instanceUrl       String?     @db.VarChar(512)
   subscriptionStart DateTime    @default(now())
   subscriptionEnd   DateTime?
   referenceId       String?     @unique
@@ -89,14 +90,29 @@ model License {
   companyId   String
   company     Company @relation(fields: [companyId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
-  CreatedBy User     @relation("CreatedLicense", fields: [createdBy], references: [username])
-  UpdatedBy User     @relation("UpdatedLicense", fields: [updatedBy], references: [username])
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  createdBy       String
+  updatedBy       String
+  CreatedBy       User              @relation("CreatedLicense", fields: [createdBy], references: [username])
+  UpdatedBy       User              @relation("UpdatedLicense", fields: [updatedBy], references: [username])
+  ExtendedLicense ExtendedLicense[]
 
   @@map("flexi_licenses")
+}
+
+model ExtendedLicense {
+  id              String   @id @default(cuid())
+  key             String   @unique(length: 2048) @db.Text
+  subscriptionEnd DateTime
+
+  licenseId String
+  license   License @relation(fields: [licenseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("flexi_extended_licenses")
 }
 
 model ApiToken {

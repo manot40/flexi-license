@@ -50,7 +50,7 @@ export default function ContentIndex() {
       cols.push({
         key: 'id',
         title: 'Action',
-        render: (cell: string, row: Product) => (
+        render: (_: string, row: Product) => (
           <Group noWrap spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
             <ActionIcon color="blue" onClick={() => setProduct(row)}>
               <IconEdit size={16} stroke={1.5} />
@@ -125,21 +125,18 @@ const columns = [
     render: (val: string) => val || <i style={{ opacity: 0.5 }}>(No description)</i>,
   },
   {
-    key: 'updatedAt',
-    title: 'Last Update',
-    style: { width: 180 },
-    render: (cell: string) =>
-      Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell)),
-  },
-  {
-    key: 'updatedBy',
-    title: 'Updated By',
-    style: { width: 120 },
-  },
-  {
     key: 'isActive',
     title: 'Status',
     style: { width: 80 },
     render: (cell: boolean) => (cell ? 'Active' : 'Inactive'),
+  },
+  {
+    key: 'updatedAt',
+    title: 'Last Update',
+    style: { width: 180 },
+    render: (cell: string, row: Product) =>
+      `${Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(cell))} (${
+        row.updatedBy
+      })`,
   },
 ];

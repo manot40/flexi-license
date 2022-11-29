@@ -24,7 +24,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data, error, mutate } = useSWR<Res<User>>('/api/auth', fetcher);
+  const { data, error, mutate } = useSWR<Res<User>>('/api/auth', fetcher, { errorRetryInterval: 10000 });
   const [loading, setLoading] = useState(true);
   const { pathname, replace } = useRouter();
 
@@ -51,7 +51,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       },
     });
 
-    await mutate({ result: res.result.user } as Res<any>);
+    await mutate({ result: res.result.user } as Res<User>);
     return res.result.user;
   }
 

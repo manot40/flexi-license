@@ -5,6 +5,7 @@ import fetcher from 'libs/fetcher';
 import { Select } from '@mantine/core';
 
 type CompanySelect = {
+  url?: string;
   fields?: (keyof Company)[];
   valueKey?: keyof Company;
   labelKey?: keyof Company;
@@ -13,7 +14,8 @@ type CompanySelect = {
 
 export default function CompanySelect({
   onChange,
-  fields = [],
+  url = '/api/v1/company',
+  fields = ['id', 'name'],
   valueKey = 'id',
   labelKey = 'name',
   searchable = true,
@@ -21,10 +23,7 @@ export default function CompanySelect({
   ...restProps
 }: CompanySelect) {
   const [search, setSearch] = useState('');
-  const { data } = useSWR<Res<Company[]>>(
-    `/api/v1/company?name=${search}&fields=${fields.join(',')}&order=name:asc`,
-    fetcher
-  );
+  const { data } = useSWR<Res<Company[]>>(`${url}?name=${search}&fields=${fields.join(',')}&order=name:asc`, fetcher);
 
   const companies = useMemo(() => {
     if (!data) return [];

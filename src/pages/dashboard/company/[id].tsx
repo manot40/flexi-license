@@ -26,6 +26,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
           maxUser: true,
           subscriptionStart: true,
           subscriptionEnd: true,
+          instanceUrl: true,
           updatedAt: true,
           updatedBy: true,
           product: {

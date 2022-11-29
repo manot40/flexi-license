@@ -14,7 +14,7 @@ type Params = {
   include: PrismaLicense['include'];
 };
 
-export async function verifyLicenseSubs({ body }: { body: License }) {
+export async function verifyLicense({ body }: { body: License }) {
   const prev = await db.license.findFirst({
     where: {
       AND: [{ productCode: body.productCode }, { companyId: body.companyId }, { type: body.type }],
@@ -75,7 +75,7 @@ export async function getUnique(where: Params['where'], select: Params['select']
 }
 
 export async function create({ body, user }: CreateUpdateParams<License>) {
-  const dupliMessage = await verifyLicenseSubs({ body });
+  const dupliMessage = await verifyLicense({ body });
   if (dupliMessage) return { error: dupliMessage };
 
   const data = {
@@ -90,9 +90,10 @@ export async function create({ body, user }: CreateUpdateParams<License>) {
     referenceId: '',
   } as License;
 
-  const flowErr = await requestLicenseKey(data);
+  const { flow, error } = await requestLicenseKey(data);
 
-  if (flowErr) return { error: flowErr.error };
+  if (error) return { error };
+  else data.referenceId = flow!.id;
 
   const result = await db.license.create({ data });
 
@@ -100,13 +101,11 @@ export async function create({ body, user }: CreateUpdateParams<License>) {
 }
 
 export async function update({ id, body, user }: CreateUpdateParams<License>) {
-  const dupliMessage = await verifyLicenseSubs({ body });
-  if (dupliMessage) return { error: dupliMessage };
-
   const data = {
     maxUser: body.maxUser,
     companyId: body.companyId,
     productCode: body.productCode,
+    instanceUrl: body.instanceUrl,
     updatedBy: user.username,
   } as License;
 
@@ -138,20 +137,35 @@ export async function approveLicense({ company, product, key }: { company: strin
 }
 
 export async function extendLicense({ id, body, user }: CreateUpdateParams<License>) {
-  const { subscriptionEnd } = (await db.license.findUnique({ where: { id } })) || {};
+  const license = await db.license.findUnique({ where: { id } });
 
-  if (!subscriptionEnd) return { error: 'License not found' };
+  if (!license) return { error: 'License not found' };
 
-  if (dayjs(subscriptionEnd).isAfter(dayjs(body.subscriptionEnd))) {
+  if (dayjs(license.subscriptionEnd).isAfter(dayjs(body.subscriptionEnd))) {
     return { error: 'New subscription end date must be greater than current subscription end date' };
   }
 
   const data = {
     subscriptionEnd: dayjs(body.subscriptionEnd).endOf('day').toDate(),
     updatedBy: user.username,
+    key: null,
   } as License;
 
-  const result = await db.license.update({ where: { id }, data });
+  const { error, flow } = await requestLicenseKey(license);
+
+  if (error) return { error };
+  else data.referenceId = flow!.id;
+
+  const [result] = await Promise.all([
+    db.license.update({ where: { id }, data }),
+    db.extendedLicense.create({
+      data: {
+        key: license.key!,
+        licenseId: license.id,
+        subscriptionEnd: license.subscriptionEnd!,
+      },
+    }),
+  ]);
 
   return { result };
 }
@@ -162,19 +176,23 @@ export async function requestLicenseKey(data: License) {
 
   if (!companyName || !productName) return { error: 'Company or Product not found' };
 
-  const license = (
-    await axios.post<LicenseReqFlow>('/flexiflow-rest/service/runtime/process-instances', {
-      processDefinitionKey: 'license-approval',
-      variables: [
-        { name: 'name', value: companyName },
-        { name: 'productName', value: data.productCode },
-        { name: 'type', value: data.type[0] + data.type.substring(1).toLowerCase() },
-        { name: 'maxUser', value: data.maxUser + '' },
-        { name: 'expiredDate', value: dayjs(data.subscriptionEnd).format('DD-MM-YYYY') },
-        { name: 'approval', value: 'Romi' /*data.updatedBy*/ },
-      ],
-    })
-  ).data;
+  try {
+    const flow = (
+      await axios.post<LicenseReqFlow>('/flexiflow-rest/service/runtime/process-instances', {
+        processDefinitionKey: 'license-approval',
+        variables: [
+          { name: 'name', value: companyName },
+          { name: 'productName', value: data.productCode },
+          { name: 'type', value: data.type[0] + data.type.substring(1).toLowerCase() },
+          { name: 'maxUser', value: data.maxUser + '' },
+          { name: 'expiredDate', value: dayjs(data.subscriptionEnd).format('DD-MM-YYYY') },
+          { name: 'approval', value: 'Romi' /*data.updatedBy*/ },
+        ],
+      })
+    ).data;
 
-  data.referenceId = license.id;
+    return { flow };
+  } catch {
+    return { error: 'Unable connect to license service' };
+  }
 }
