@@ -83,6 +83,7 @@ export async function create({ body, user }: CreateUpdateParams<License>) {
     maxUser: body.maxUser,
     companyId: body.companyId,
     productCode: body.productCode,
+    instanceUrl: body.instanceUrl,
     subscriptionStart: dayjs(body.subscriptionStart).startOf('day').toDate(),
     subscriptionEnd: body.subscriptionEnd ? dayjs(body.subscriptionEnd).endOf('day').toDate() : undefined,
     createdBy: user.username,
@@ -102,12 +103,18 @@ export async function create({ body, user }: CreateUpdateParams<License>) {
 
 export async function update({ id, body, user }: CreateUpdateParams<License>) {
   const data = {
+    key: null,
     maxUser: body.maxUser,
     companyId: body.companyId,
     productCode: body.productCode,
     instanceUrl: body.instanceUrl,
     updatedBy: user.username,
   } as License;
+
+  const { flow, error } = await requestLicenseKey(data);
+
+  if (error) return { error };
+  data.referenceId = flow!.id;
 
   const result = await db.license.update({ where: { id }, data });
 

@@ -8,8 +8,14 @@ const handler = async (req: NextReq, res: NextRes) => {
   try {
     switch (req.method) {
       case 'GET': {
-        const { name = '', limit = '5' } = req.query;
-        const { paginate, result } = await product.getMany({ name, limit, fields: 'id,name,code' });
+        const { name = '', limit = '5', order = 'name:asc' } = req.query;
+        const { paginate, result } = await product.getMany({
+          name,
+          order,
+          limit,
+          fields: 'id,name,code',
+          isActive: 'true:equals',
+        });
 
         return res.status(200).json({
           success: true,
