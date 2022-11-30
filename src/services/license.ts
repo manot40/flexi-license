@@ -190,21 +190,17 @@ export async function requestLicenseKey(data: License) {
   if (!companyName || !productName) return { error: 'Company or Product not found' };
 
   try {
-    const variables = [
-      { name: 'name', value: companyName },
-      { name: 'productName', value: data.productCode },
-      { name: 'type', value: data.type[0] + data.type.substring(1).toLowerCase() },
-      { name: 'maxUser', value: data.maxUser + '' },
-      { name: 'approval', value: 'Romi' /*data.updatedBy*/ },
-    ];
-
-    if (data.type === 'CLOUD')
-      variables.push({ name: 'expiredDate', value: dayjs(data.subscriptionEnd).format('DD-MM-YYYY') });
-
     const flow = (
       await axios.post<LicenseReqFlow>('/flexiflow-rest/service/runtime/process-instances', {
         processDefinitionKey: 'license-approval',
-        variables,
+        variables: [
+          { name: 'name', value: companyName },
+          { name: 'productName', value: data.productCode },
+          { name: 'type', value: data.type[0] + data.type.substring(1).toLowerCase() },
+          { name: 'maxUser', value: data.maxUser + '' },
+          { name: 'expiredDate', value: dayjs(data.subscriptionEnd).format('DD-MM-YYYY') },
+          { name: 'approval', value: 'Romi' /*data.updatedBy*/ },
+        ],
       })
     ).data;
 
