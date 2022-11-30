@@ -102,14 +102,20 @@ export async function create({ body, user }: CreateUpdateParams<License>) {
 }
 
 export async function update({ id, body, user }: CreateUpdateParams<License>) {
-  const data = {
+  let data = await db.license.findUnique({ where: { id } });
+
+  if (!data) return { error: 'License not found' };
+
+  data = {
+    ...data,
     key: null,
     maxUser: body.maxUser,
     companyId: body.companyId,
     productCode: body.productCode,
     instanceUrl: body.instanceUrl,
     updatedBy: user.username,
-  } as License;
+    updatedAt: new Date(),
+  };
 
   const { flow, error } = await requestLicenseKey(data);
 
@@ -184,22 +190,27 @@ export async function requestLicenseKey(data: License) {
   if (!companyName || !productName) return { error: 'Company or Product not found' };
 
   try {
+    const variables = [
+      { name: 'name', value: companyName },
+      { name: 'productName', value: data.productCode },
+      { name: 'type', value: data.type[0] + data.type.substring(1).toLowerCase() },
+      { name: 'maxUser', value: data.maxUser + '' },
+      { name: 'approval', value: 'Romi' /*data.updatedBy*/ },
+    ];
+
+    if (data.type === 'CLOUD')
+      variables.push({ name: 'expiredDate', value: dayjs(data.subscriptionEnd).format('DD-MM-YYYY') });
+
     const flow = (
       await axios.post<LicenseReqFlow>('/flexiflow-rest/service/runtime/process-instances', {
         processDefinitionKey: 'license-approval',
-        variables: [
-          { name: 'name', value: companyName },
-          { name: 'productName', value: data.productCode },
-          { name: 'type', value: data.type[0] + data.type.substring(1).toLowerCase() },
-          { name: 'maxUser', value: data.maxUser + '' },
-          { name: 'expiredDate', value: dayjs(data.subscriptionEnd).format('DD-MM-YYYY') },
-          { name: 'approval', value: 'Romi' /*data.updatedBy*/ },
-        ],
+        variables,
       })
     ).data;
 
     return { flow };
-  } catch {
+  } catch (e: any) {
+    console.error(e.response?.data || e.message);
     return { error: 'Unable connect to license service' };
   }
 }
