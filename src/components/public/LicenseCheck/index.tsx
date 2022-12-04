@@ -1,25 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+import { debounce } from 'utils';
 
 import Result from './result';
-import { Card, Flex, Stack } from '@mantine/core';
-import { CompanySelect, ProductSelect } from 'components/reusable';
+import { ProductSelect } from 'components/reusable';
+import { Card, Flex, Stack, TextInput } from '@mantine/core';
 
 const LicenseCheck = () => {
-  const [company, setCompany] = useState<Company>();
+  const [company, setCompany] = useState('');
   const [product, setProduct] = useState<Product>();
   const [licenses, setLicenses] = useState<License[] | null>(null);
 
-  useEffect(() => {
-    if (company && product)
-      (async () => {
-        const res = await fetch(
-          `/api/v1/public/check-license?companyId=${company.id}&productCode=${product.code}`
-        ).then((r) => r.json());
+  // eslint-disable-next-line
+  const fetchLicenses = useCallback(
+    debounce(async (company, product) => {
+      const res = await fetch(`/api/v1/public/check-license?company=${company}&productCode=${product}`).then((r) =>
+        r.json()
+      );
 
-        if (Array.isArray(res?.result)) setLicenses(res.result);
-        else setLicenses(null);
-      })();
-  }, [company, product]);
+      if (Array.isArray(res?.result)) setLicenses(res.result);
+      else setLicenses(null);
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    if (company && product) fetchLicenses(company, product.code);
+  }, [company, product, fetchLicenses]);
 
   return (
     <Card p="lg" shadow="md" radius="md" maw="90vw">
@@ -33,12 +40,11 @@ const LicenseCheck = () => {
             url="/api/v1/public/product"
             onChange={(_, p) => setProduct(p)}
           />
-          <CompanySelect
-            value={company?.id}
+          <TextInput
+            value={company}
             label="Company Name"
-            placeholder="Search company"
-            url="/api/v1/public/company"
-            onChange={(_, c) => setCompany(c)}
+            placeholder="Acme. Inc."
+            onChange={(e) => setCompany(e.target.value)}
           />
         </Flex>
         <Result product={product!} licenses={licenses} />

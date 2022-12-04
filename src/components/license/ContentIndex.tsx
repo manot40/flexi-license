@@ -9,7 +9,7 @@ import { useViewportSize } from '@mantine/hooks';
 import LicenseForm from './LicenseForm';
 import ExtendLicense from './ExtendLicense';
 import { AutoTable, CompanySelect } from 'components/reusable';
-import { IconSquarePlus, IconEdit, IconCertificate2 } from '@tabler/icons';
+import { IconSquarePlus, IconEdit, IconCertificate2, IconFileDownload } from '@tabler/icons';
 import {
   Flex,
   Card,
@@ -49,7 +49,7 @@ export default function LicenseTable() {
     cols.push({
       key: 'id',
       title: 'Action',
-      render: (_: any, row: License) => (
+      render: (id: string, row: License) => (
         <Group noWrap spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
           <ActionIcon color="blue" onClick={() => setLicense(row)}>
             <IconEdit size={16} stroke={1.5} />
@@ -57,6 +57,11 @@ export default function LicenseTable() {
           {row.type === 'CLOUD' && row.key && (
             <ActionIcon color="blue" onClick={() => (setLicense(row), setIsExtend(true))}>
               <IconSquarePlus size={16} stroke={1.5} />
+            </ActionIcon>
+          )}
+          {row.key && (
+            <ActionIcon color="blue" onClick={() => window.open(`/api/v1/license/${id}/download`)}>
+              <IconFileDownload size={18} stroke={1.4} />
             </ActionIcon>
           )}
         </Group>

@@ -8,16 +8,16 @@ const handler = async (req: NextReq, res: NextRes) => {
   try {
     switch (req.method) {
       case 'GET': {
-        const { companyId = '', productCode = '' } = req.query as { [key: string]: string };
+        const { company = '', productCode = '' } = req.query as { [key: string]: string };
 
-        if (!companyId || !productCode)
+        if (!company || !productCode)
           return res.status(400).json({
             success: false,
-            message: 'Company ID and Product Code are required',
+            message: 'Company and Product Code are required',
           });
 
         const result = await db.license.findMany({
-          where: { companyId, productCode, key: { not: null } },
+          where: { productCode, key: { not: null }, company: { name: company } },
           select: {
             type: true,
             maxUser: true,
