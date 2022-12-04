@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useAuth } from 'components/AuthContext';
 import { useDisclosure } from '@mantine/hooks';
 
-import { IconCertificate2 } from '@tabler/icons';
 import { LicenseForm } from 'components/license';
 import { CompanyForm } from 'components/company';
 import { AutoTable, Result } from 'components/reusable';
-import { Stack, Button, Flex, Modal, Title, Card, PasswordInput } from '@mantine/core';
+import { IconCertificate2, IconFileDownload } from '@tabler/icons';
+import { Stack, Button, Flex, Modal, Title, Card, PasswordInput, ActionIcon, Group } from '@mantine/core';
 
 type Props = {
   data?: Company & { licenses: License[] };
@@ -69,9 +69,20 @@ const cols = [
     key: 'key',
     title: 'License Key',
     style: { minWidth: 200 },
-    render: (val?: string) =>
+    render: (val: string | null, { id }: License) =>
       val ? (
-        <PasswordInput readOnly value={val} styles={{ input: { border: 0 } }} onFocus={(e) => e.target.select()} />
+        <Group spacing={2}>
+          <PasswordInput
+            readOnly
+            miw="calc(100% - 32px)"
+            value={val}
+            styles={{ input: { border: 0 } }}
+            onFocus={(e) => e.target.select()}
+          />
+          <ActionIcon component="span" color="blue" onClick={() => window.open(`/api/v1/license/${id}/download`)}>
+            <IconFileDownload size={20} stroke={1.4} />
+          </ActionIcon>
+        </Group>
       ) : (
         <i style={{ opacity: 0.5 }}>(pending approval)</i>
       ),

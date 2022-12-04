@@ -22,9 +22,10 @@ const handler: CtxWithUser = async (req, res) => {
         if (!result.key) return res.status(400).json({ success: false, message: 'License key not approved yet' });
 
         const licenseFile = Buffer.from(`name=${result.company.name}\nkey=${result.key}`);
+        const companyTrimmed = result.company.name.replace(/\s/g, '');
 
         return res
-          .setHeader('Content-Disposition', `attachment; filename="${result.company.name}-${result.productCode}.ini"`)
+          .setHeader('Content-Disposition', `attachment; filename="${companyTrimmed}-${result.productCode}.ini"`)
           .setHeader('Content-Type', 'text/plain')
           .send(licenseFile);
       }

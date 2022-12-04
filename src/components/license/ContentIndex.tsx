@@ -49,7 +49,7 @@ export default function LicenseTable() {
     cols.push({
       key: 'id',
       title: 'Action',
-      render: (id: string, row: License) => (
+      render: (_: string, row: License) => (
         <Group noWrap spacing={4} position="left" onClick={(e) => e.stopPropagation()}>
           <ActionIcon color="blue" onClick={() => setLicense(row)}>
             <IconEdit size={16} stroke={1.5} />
@@ -57,11 +57,6 @@ export default function LicenseTable() {
           {row.type === 'CLOUD' && row.key && (
             <ActionIcon color="blue" onClick={() => (setLicense(row), setIsExtend(true))}>
               <IconSquarePlus size={16} stroke={1.5} />
-            </ActionIcon>
-          )}
-          {row.key && (
-            <ActionIcon color="blue" onClick={() => window.open(`/api/v1/license/${id}/download`)}>
-              <IconFileDownload size={18} stroke={1.4} />
             </ActionIcon>
           )}
         </Group>
@@ -127,9 +122,20 @@ const columns = [
     key: 'key',
     title: 'License Key',
     style: { minWidth: 200 },
-    render: (val?: string) =>
+    render: (val: string | null, { id }: License) =>
       val ? (
-        <PasswordInput readOnly value={val} styles={{ input: { border: 0 } }} onFocus={(e) => e.target.select()} />
+        <Group spacing={2}>
+          <PasswordInput
+            readOnly
+            miw="calc(100% - 32px)"
+            value={val}
+            styles={{ input: { border: 0 } }}
+            onFocus={(e) => e.target.select()}
+          />
+          <ActionIcon component="span" color="blue" onClick={() => window.open(`/api/v1/license/${id}/download`)}>
+            <IconFileDownload size={20} stroke={1.4} />
+          </ActionIcon>
+        </Group>
       ) : (
         <i style={{ opacity: 0.5 }}>(pending approval)</i>
       ),
