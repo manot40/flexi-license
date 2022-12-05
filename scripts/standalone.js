@@ -10,9 +10,6 @@ if (!fs.existsSync('.next/standalone')) {
 
 if (!fs.existsSync('out')) fs.mkdirSync('out');
 
-fs.cpSync('package.json', 'out/package.json');
-fs.cpSync('package-lock.json', 'out/package-lock.json');
-
 fs.cpSync('public', 'out/public', { recursive: true });
 fs.cpSync('.next/standalone', 'out/', { recursive: true });
 fs.cpSync('.next/static', 'out/.next/static', { recursive: true });
